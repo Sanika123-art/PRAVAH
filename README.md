@@ -1,4 +1,4 @@
-# SAKSHAM — AICTE Approval Workflow & Compliance Management System
+# PRAVAH — AICTE Approval Workflow & Compliance Management System
 > **Tagline:** Intelligent Scrutiny. Automated Workflows. Transparent Compliance.  
 > **Problem Statement ID:** Smart India Hackathon (SIH) 26262 — “Integrated AICTE Approval Workflow Automation, Compliance Monitoring and Alert Management System”  
 > **Statutory Alignment:** AICTE Approval Process Handbook (APH) 2024–25 to 2026–27  
@@ -7,7 +7,7 @@
 ---
 
 ## 1. Project Overview & Scope
-**SAKSHAM** is a role-based workflow automation and compliance management platform designed from the perspective of AICTE officials, regional officers, and expert committee members who process technical institution approval queues.
+**PRAVAH** is a role-based workflow automation and compliance management platform designed from the perspective of AICTE officials, regional officers, and expert committee members who process technical institution approval queues.
 
 ### Key Capabilities in Phase 1:
 - **Government-Grade Administrative Shell:** Deep navy blue palette (`#0A1B38`), crisp typography, accessible high-contrast tables, and restrained saffron/green indicators.
@@ -22,7 +22,7 @@
   - `/reports`: Operational reporting and regional workload distribution charts (Recharts).
   - `/audit`: Forensic, tamper-evident audit trail capturing every officer decision and stage transition.
   - `/admin/rules`: Versioned regulatory rules engine citing specific APH chapters and clauses.
-- **Cardinal Regulatory Principle:** SAKSHAM supports authorized human scrutiny, inspection, and verification. **It does NOT and shall NEVER autonomously grant regulatory approval.**
+- **Cardinal Regulatory Principle:** PRAVAH supports authorized human scrutiny, inspection, and verification. **It does NOT and shall NEVER autonomously grant regulatory approval.**
 - **Transparent Boundaries:** Uses a coherent, deterministic synthetic dataset. Fully isolated from restricted live AICTE systems.
 
 ---
@@ -30,7 +30,7 @@
 ## 2. Technical Architecture & Tech Stack
 
 ```
-SAKSHAM/
+PRAVAH/
 ├── client/                     # React 18 + Vite + TypeScript Frontend
 │   ├── src/components/         # Layout, StatCard, StatusBadge, ApplicationDetailDrawer
 │   ├── src/pages/              # 10 route page components
@@ -90,32 +90,14 @@ npm run docker:up
 npm run build --workspace=shared
 ```
 
-### Document OCR Verification
-Institution uploads are content-checked and verified on the server using PDF.js text extraction and Tesseract.js OCR for scanned PDFs and images. The English Tesseract trained data is installed with the server dependencies; no document content is sent to an external OCR service. To use an alternate local trained-data directory, set `TESSERACT_LANG_PATH` to that directory before starting the server.
-
-Apply the document verification columns to the configured PostgreSQL database before running the updated server:
-```bash
-npm run db:generate
-npm run db:migrate
-```
-
-Run these commands from the `PRAVAH` workspace root with PostgreSQL available and `server/.env` configured from `server/.env.example` (including `DATABASE_URL`).
-Each upload receives `VERIFIED`, `REJECTED`, or `MANUAL_REVIEW`. OCR checks are not proof of authenticity and do not approve applications; only required documents with `VERIFIED` status pass preliminary submission checks. Documents needing correction or review remain attached to the institution's draft.
-
 ---
 
 ## 4. Running the Development Environment
-
-### English and Hindi
-The frontend language selector is available on the sign-in screen and in both portal headers. Choose English or हिंदी; the selection updates immediately and is saved in browser local storage. Locale catalogs live in `client/src/locales`. The current translations cover shared portal navigation, officer page headings, sign-in labels, status badges, and common loading/error/empty states; page-specific text not yet catalogued remains in English.
-
-The frontend uses Vite's same-origin `/api` proxy to the backend, so the local UI works on the configured frontend port without a hardcoded browser API origin. Vite uses `strictPort`; if port `5173` is occupied, stop the other frontend process instead of launching an unconfigured fallback port. The combined `npm run dev` command stops the other service if either the client or server fails to start.
 
 ### Start Both Server & Client Concurrently:
 ```bash
 npm run dev
 ```
-If you see `EADDRINUSE`, stop the previous PRAVAH development server in its terminal with `Ctrl+C`, then run `npm run dev` once. Do not stop unrelated Node processes. On PowerShell, inspect the process owning a port with `Get-NetTCPConnection -LocalPort 5000,5173 -State Listen`; verify its command line is from this project before stopping that specific PID.
 
 ### Or Run Services Individually:
 - **Frontend Client (Vite Dev Server):**
