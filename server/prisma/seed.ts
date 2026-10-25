@@ -162,55 +162,111 @@ async function main() {
     }
   }
 
-  // 3. Seed Demo Institution Users
-  console.log('Seeding Demo Institution Users...');
-  const apexInstId = institutionMap.get('1-3489128');
-  if (apexInstId) {
-    await prisma.systemUser.upsert({
-      where: { email: 'director@apextech.ac.in' },
-      update: {
-        institutionId: apexInstId,
-        passwordHash: defaultHash,
-        isEmailVerified: true,
-      },
-      create: {
-        id: 'usr-inst-apex',
-        username: 'director.apex',
-        email: 'director@apextech.ac.in',
-        fullName: 'Dr. Vikram Malhotra',
-        role: UserRole.INSTITUTION_USER,
-        institutionId: apexInstId,
-        department: 'Principal / Authorized Representative',
-        passwordHash: defaultHash,
-        isActive: true,
-        isEmailVerified: true,
-      },
-    });
-  }
+  // 3. Seed Demo Institutions & Institution Users
+  console.log('Seeding Demo Institutions & Institution Users...');
+  const apexInst = await prisma.institution.upsert({
+    where: { permanentInstituteId: '1-3489128' },
+    update: {
+      name: 'Apex Institute of Technology & Management',
+      trustName: 'Apex Technical Education Society',
+      institutionType: InstitutionType.PRIVATE_SELF_FINANCED,
+      region: Region.NORTH_WEST,
+      state: 'Punjab',
+      isVerified: true,
+    },
+    create: {
+      id: 'inst-demo-apex',
+      permanentInstituteId: '1-3489128',
+      name: 'Apex Institute of Technology & Management',
+      trustName: 'Apex Technical Education Society',
+      institutionType: InstitutionType.PRIVATE_SELF_FINANCED,
+      region: Region.NORTH_WEST,
+      state: 'Punjab',
+      district: 'SAS Nagar (Mohali)',
+      address: 'Sector 82, JLPL Industrial Area',
+      pincode: '140306',
+      contactEmail: 'director@apextech.ac.in',
+      contactPhone: '+91-9876543210',
+      isVerified: true,
+    },
+  });
+  institutionMap.set('1-3489128', apexInst.id);
 
-  const sahyadriInstId = institutionMap.get('1-8491029');
-  if (sahyadriInstId) {
-    await prisma.systemUser.upsert({
-      where: { email: 'principal@sahyadri.ac.in' },
-      update: {
-        institutionId: sahyadriInstId,
-        passwordHash: defaultHash,
-        isEmailVerified: true,
-      },
-      create: {
-        id: 'usr-inst-sahyadri',
-        username: 'principal.sahyadri',
-        email: 'principal@sahyadri.ac.in',
-        fullName: 'Dr. Ramesh Joshi',
-        role: UserRole.INSTITUTION_USER,
-        institutionId: sahyadriInstId,
-        department: 'Director / Authorized Signatory',
-        passwordHash: defaultHash,
-        isActive: true,
-        isEmailVerified: true,
-      },
-    });
-  }
+  await prisma.systemUser.upsert({
+    where: { email: 'director@apextech.ac.in' },
+    update: {
+      institutionId: apexInst.id,
+      passwordHash: defaultHash,
+      isActive: true,
+      isEmailVerified: true,
+      failedLoginAttempts: 0,
+      lockedUntil: null,
+    },
+    create: {
+      id: 'usr-inst-apex',
+      username: 'director.apex',
+      email: 'director@apextech.ac.in',
+      fullName: 'Dr. Vikram Malhotra',
+      role: UserRole.INSTITUTION_USER,
+      institutionId: apexInst.id,
+      department: 'Principal / Authorized Representative',
+      passwordHash: defaultHash,
+      isActive: true,
+      isEmailVerified: true,
+    },
+  });
+
+  const sahyadriInst = await prisma.institution.upsert({
+    where: { permanentInstituteId: '1-8491029' },
+    update: {
+      name: 'Sahyadri Institute of Engineering & Research',
+      trustName: 'Sahyadri Shikshan Sanstha',
+      institutionType: InstitutionType.PRIVATE_SELF_FINANCED,
+      region: Region.WESTERN,
+      state: 'Maharashtra',
+      isVerified: true,
+    },
+    create: {
+      id: 'inst-demo-sahyadri',
+      permanentInstituteId: '1-8491029',
+      name: 'Sahyadri Institute of Engineering & Research',
+      trustName: 'Sahyadri Shikshan Sanstha',
+      institutionType: InstitutionType.PRIVATE_SELF_FINANCED,
+      region: Region.WESTERN,
+      state: 'Maharashtra',
+      district: 'Pune',
+      address: 'Survey No. 45/2, Karve Road',
+      pincode: '411038',
+      contactEmail: 'principal@sahyadri.ac.in',
+      contactPhone: '+91-9876543211',
+      isVerified: true,
+    },
+  });
+  institutionMap.set('1-8491029', sahyadriInst.id);
+
+  await prisma.systemUser.upsert({
+    where: { email: 'principal@sahyadri.ac.in' },
+    update: {
+      institutionId: sahyadriInst.id,
+      passwordHash: defaultHash,
+      isActive: true,
+      isEmailVerified: true,
+      failedLoginAttempts: 0,
+      lockedUntil: null,
+    },
+    create: {
+      id: 'usr-inst-sahyadri',
+      username: 'principal.sahyadri',
+      email: 'principal@sahyadri.ac.in',
+      fullName: 'Dr. Ramesh Joshi',
+      role: UserRole.INSTITUTION_USER,
+      institutionId: sahyadriInst.id,
+      department: 'Director / Authorized Signatory',
+      passwordHash: defaultHash,
+      isActive: true,
+      isEmailVerified: true,
+    },
+  });
 
   // 4. Seed Applications (Linked to Institutions)
   console.log('Seeding Applications with Institution links...');

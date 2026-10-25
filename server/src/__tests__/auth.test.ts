@@ -3,6 +3,7 @@ import request from 'supertest';
 import { createApp } from '../app';
 import { prisma } from '../db/prisma';
 import { hashPassword, verifyPassword } from '../utils/security';
+import { initializeDemoAccounts } from '../db/seedDemoUsers';
 
 function extractCookie(res: request.Response, prefix: string): string {
   const cookies = res.headers['set-cookie'];
@@ -22,6 +23,9 @@ describe('SAKSHAM Authentication & Authorization (Phase 3A)', () => {
   const demoPassword = process.env.DEMO_USER_PASSWORD || 'AicteDev@2026!';
 
   beforeAll(async () => {
+    // Synchronize all demo accounts (Officers + Institutions)
+    await initializeDemoAccounts();
+
     // Ensure test users exist with known Argon2id hashed passwords
     const hashed = await hashPassword(demoPassword);
 
@@ -520,6 +524,131 @@ describe('SAKSHAM Authentication & Authorization (Phase 3A)', () => {
         .set('Authorization', 'Bearer invalid.jwt.token');
       expect(invalidTokenRes.status).toBe(401);
       expect(invalidTokenRes.body.success).toBe(false);
+    });
+  });
+
+  describe('Institutional Demo Accounts Authentication & Workflow Access', () => {
+    it('authenticates Apex Institute demo account and accesses protected institution endpoints', async () => {
+      const loginRes = await request(app)
+        .post('/api/auth/login')
+        .send({
+          usernameOrEmail: 'director@apextech.ac.in',
+          password: demoPassword,
+        });
+
+      expect(loginRes.status).toBe(200);
+      expect(loginRes.body.success).toBe(true);
+      expect(loginRes.body.data.user.role).toBe('INSTITUTION_USER');
+      expect(loginRes.body.data.user.email).toBe('director@apextech.ac.in');
+      expect(loginRes.body.data.user.permanentInstituteId).toBe('1-3489128');
+      expect(loginRes.body.data.token).toBeDefined();
+
+      const token = loginRes.body.data.token;
+
+      // Access protected institution profile endpoint
+      const profileRes = await request(app)
+        .get('/api/institution/profile')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(profileRes.status).toBe(200);
+      expect(profileRes.body.success).toBe(true);
+      expect(profileRes.body.data.permanentInstituteId).toBe('1-3489128');
+      expect(profileRes.body.data.name).toContain('Apex Institute');
+
+      // Access protected institution applications endpoint
+      const appsRes = await request(app)
+        .get('/api/institution/applications')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(appsRes.status).toBe(200);
+      expect(appsRes.body.success).toBe(true);
+      expect(Array.isArray(appsRes.body.data)).toBe(true);
+    });
+
+    it('authenticates Sahyadri College demo account and accesses protected institution endpoints', async () => {
+      const loginRes = await request(app)
+        .post('/api/auth/login')
+        .send({
+          usernameOrEmail: 'principal@sahyadri.ac.in',
+          password: demoPassword,
+        });
+
+      expect(loginRes.status).toBe(200);
+      expect(loginRes.body.success).toBe(true);
+      expect(loginRes.body.data.user.role).toBe('INSTITUTION_USER');
+      expect(loginRes.body.data.user.email).toBe('principal@sahyadri.ac.in');
+      expect(loginRes.body.data.user.permanentInstituteId).toBe('1-8491029');
+      expect(loginRes.body.data.token).toBeDefined();
+
+      const token = loginRes.body.data.token;
+
+      // Access protected institution profile endpoint
+      const profileRes = await request(app)
+        .get('/api/institution/profile')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(profileRes.status).toBe(200);
+      expect(profileRes.body.success).toBe(true);
+      expect(profileRes.body.data.permanentInstituteId).toBe('1-8491029');
+      expect(profileRes.body.data.name).toContain('Sahyadri');
+
+      // Access protected institution applications endpoint
+      const appsRes = await request(app)
+        .get('/api/institution/applications')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(appsRes.status).toBe(200);
+      expect(appsRes.body.success).toBe(true);
+      expect(Array.isArray(appsRes.body.data)).toBe(true);
+    });
+
+    it('prevents institutional users from accessing internal officer endpoints (RBAC boundary)', async () => {
+      const loginRes = await request(app)
+        .post('/api/auth/login')
+        .send({
+          usernameOrEmail: 'director@apextech.ac.in',
+          password: demoPassword,
+        });
+
+      const token = loginRes.body.data.token;
+
+      // Institutional user calling officer audit endpoint
+      const auditRes = await request(app)
+        .get('/api/audit')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(auditRes.status).toBe(403);
+    });
+
+    it('safely self-repairs and unlocks an institutional demo account on correct demo password', async () => {
+      // Simulate outdated hash and locked account on Apex demo user
+      await prisma.systemUser.update({
+        where: { email: 'director@apextech.ac.in' },
+        data: {
+          passwordHash: '$argon2id$v=19$m=65536,t=3,p=1$b3V0ZGF0ZWRzYWx0$dummyoutdatedhashinstitution1234567890',
+          failedLoginAttempts: 5,
+          lockedUntil: new Date(Date.now() + 60 * 60 * 1000), // 1 hour in future
+        },
+      });
+
+      // Login attempt with valid demo password should auto-unlock and self-repair
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({
+          usernameOrEmail: 'director@apextech.ac.in',
+          password: demoPassword,
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.user.role).toBe('INSTITUTION_USER');
+
+      // Verify DB lock cleared
+      const user = await prisma.systemUser.findUnique({
+        where: { email: 'director@apextech.ac.in' },
+      });
+      expect(user?.lockedUntil).toBeNull();
+      expect(user?.failedLoginAttempts).toBe(0);
     });
   });
 });

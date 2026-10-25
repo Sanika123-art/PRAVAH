@@ -74,12 +74,14 @@ export const loginUser = async (params: LoginParams): Promise<AuthResult> => {
     ? rawIp.split('.').slice(0, 3).join('.') + '.xxx'
     : 'masked-ip';
 
-  // Support legacy email aliases to officer usernames
+  // Support legacy email aliases to officer & institutional demo usernames
   const LEGACY_OFFICER_ALIASES: Record<string, string> = {
     'ro.central@aicte.gov.in': 'neelesh.verma',
     'cm.rao.evc@aicte.gov.in': 'cm.rao',
     'member.secretary@aicte.gov.in': 'rajendra.prasad',
     'sac.hearing@aicte.gov.in': 'bn.panda',
+    'director@apextech.ac.in': 'director.apex',
+    'principal@sahyadri.ac.in': 'principal.sahyadri',
   };
 
   const usernameFromAlias = LEGACY_OFFICER_ALIASES[identifier];
@@ -118,24 +120,69 @@ export const loginUser = async (params: LoginParams): Promise<AuthResult> => {
     throw new AuthenticationError('Invalid username or password', 401);
   }
 
+  const DEMO_PASSWORD = process.env.DEMO_USER_PASSWORD || 'AicteDev@2026!';
+  const DEMO_ACCOUNT_IDS = new Set([
+    'usr-scr-01',
+    'usr-scr-02',
+    'usr-scr-03',
+    'usr-ro-01',
+    'usr-evc-01',
+    'usr-sac-01',
+    'usr-ms-01',
+    'usr-adm-01',
+    'usr-inst-apex',
+    'usr-inst-sahyadri',
+  ]);
+  const DEMO_ACCOUNT_EMAILS = new Set([
+    'director@apextech.ac.in',
+    'principal@sahyadri.ac.in',
+    'rk.sharma@aicte.gov.in',
+    'neelesh.verma@aicte.gov.in',
+    'cm.rao@aicte.gov.in',
+    'rajendra.prasad@aicte.gov.in',
+    'bn.panda@aicte.gov.in',
+    'itadmin.saksham@aicte.gov.in',
+    'anjali.deshmukh@aicte.gov.in',
+    's.narayanan@aicte.gov.in',
+  ]);
+
+  const isDemoAccount =
+    DEMO_ACCOUNT_IDS.has(user.id) ||
+    DEMO_ACCOUNT_EMAILS.has(user.email.toLowerCase()) ||
+    user.username === 'director.apex' ||
+    user.username === 'principal.sahyadri';
+
   // Check if account is locked
   if (user.lockedUntil && user.lockedUntil > new Date()) {
-    const minutesLeft = Math.ceil((user.lockedUntil.getTime() - Date.now()) / (60 * 1000));
-    await recordAuditEvent({
-      actorId: user.id,
-      actorName: user.fullName,
-      actorRole: user.role,
-      actionCode: 'AUTH_ACCOUNT_LOCKED_ATTEMPT',
-      actionTitle: 'Login Attempt on Locked Account',
-      entityType: 'AUTHENTICATION',
-      entityId: user.id,
-      details: `Sign-in attempt on locked account '${user.username}'. Lock expires in ${minutesLeft} minute(s).`,
-      ipAddressMasked: maskedIp,
-    });
-    throw new AuthenticationError(
-      `Account is temporarily locked due to multiple failed attempts. Please retry in ${minutesLeft} minute(s).`,
-      423 // Locked
-    );
+    if (isDemoAccount && password === DEMO_PASSWORD) {
+      // Auto-unlock demo account with valid demo password
+      await prisma.systemUser.update({
+        where: { id: user.id },
+        data: {
+          lockedUntil: null,
+          failedLoginAttempts: 0,
+        },
+      });
+      user.lockedUntil = null;
+      user.failedLoginAttempts = 0;
+    } else {
+      const minutesLeft = Math.ceil((user.lockedUntil.getTime() - Date.now()) / (60 * 1000));
+      await recordAuditEvent({
+        actorId: user.id,
+        actorName: user.fullName,
+        actorRole: user.role,
+        actionCode: 'AUTH_ACCOUNT_LOCKED_ATTEMPT',
+        actionTitle: 'Login Attempt on Locked Account',
+        entityType: 'AUTHENTICATION',
+        entityId: user.id,
+        details: `Sign-in attempt on locked account '${user.username}'. Lock expires in ${minutesLeft} minute(s).`,
+        ipAddressMasked: maskedIp,
+      });
+      throw new AuthenticationError(
+        `Account is temporarily locked due to multiple failed attempts. Please retry in ${minutesLeft} minute(s).`,
+        423 // Locked
+      );
+    }
   }
 
   // Check if account is active
@@ -157,23 +204,11 @@ export const loginUser = async (params: LoginParams): Promise<AuthResult> => {
     );
   }
 
-  const DEMO_PASSWORD = process.env.DEMO_USER_PASSWORD || 'AicteDev@2026!';
-  const DEMO_OFFICER_IDS = new Set([
-    'usr-scr-01',
-    'usr-scr-02',
-    'usr-scr-03',
-    'usr-ro-01',
-    'usr-evc-01',
-    'usr-sac-01',
-    'usr-ms-01',
-    'usr-adm-01',
-  ]);
-
   // Verify Argon2id password hash
   let isValidPassword = await verifyPassword(user.passwordHash, password);
 
-  // Safe self-repair for known demo officer accounts if password matches DEMO_PASSWORD
-  if (!isValidPassword && DEMO_OFFICER_IDS.has(user.id) && password === DEMO_PASSWORD) {
+  // Safe self-repair for known demo accounts if password matches DEMO_PASSWORD
+  if (!isValidPassword && isDemoAccount && password === DEMO_PASSWORD) {
     const newHash = await hashPassword(DEMO_PASSWORD);
     await prisma.systemUser.update({
       where: { id: user.id },
