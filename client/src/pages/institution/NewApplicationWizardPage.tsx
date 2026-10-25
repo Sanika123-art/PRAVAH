@@ -35,7 +35,7 @@ const STEPS = [
   { id: 3, title: 'Programmes & Intake', desc: 'Capacity and land metrics' },
   { id: 4, title: 'Document Checklist', desc: 'Upload statutory documents' },
   { id: 5, title: 'Preliminary Validation', desc: 'Rule compliance checks' },
-  { id: 6, title: 'Submit to SAKSHAM', desc: 'Confirm and dispatch' },
+  { id: 6, title: 'Submit to PRAVAH', desc: 'Confirm and dispatch' },
 ];
 
 export const NewApplicationWizardPage: React.FC = () => {
@@ -170,6 +170,9 @@ export const NewApplicationWizardPage: React.FC = () => {
         // Run preliminary checks for Step 5
         const res = await runPreliminaryChecks(activeId);
         setPreliminaryResults(res);
+      } else if (currentStep === 5 && !preliminaryResults?.passed) {
+        setErrorMessage('Resolve every mandatory document verification issue before continuing.');
+        return;
       }
 
       setCurrentStep((prev) => Math.min(prev + 1, 6));
@@ -188,10 +191,17 @@ export const NewApplicationWizardPage: React.FC = () => {
     setErrorMessage(null);
 
     try {
-      await uploadApplicationDocument(applicationId, file, docType);
+      const result = await uploadApplicationDocument(applicationId, file, docType);
       await refreshChecklist(applicationId);
-      setSuccessMessage(`Document "${file.name}" uploaded successfully.`);
-      setTimeout(() => setSuccessMessage(null), 3000);
+      if (result.verificationStatus === 'VERIFIED') {
+        setSuccessMessage(`Document "${file.name}" passed automated document checks. Authenticity is not established.`);
+      } else {
+        setErrorMessage(`${result.verificationStatus}: ${result.verificationExplanation || 'The document requires correction or authorized review.'}`);
+      }
+      setTimeout(() => {
+        setSuccessMessage(null);
+        setErrorMessage(null);
+      }, 7000);
     } catch (err: any) {
       setErrorMessage(err.message || 'File upload failed. Ensure PDF/PNG format and max 10MB.');
     } finally {
@@ -374,7 +384,7 @@ export const NewApplicationWizardPage: React.FC = () => {
                 Step 2: Review Institutional Identification & Jurisdiction
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
-                Authoritative record retrieved from SAKSHAM Institutional Directory.
+                Authoritative record retrieved from PRAVAH Institutional Directory.
               </p>
             </div>
 
@@ -521,9 +531,29 @@ export const NewApplicationWizardPage: React.FC = () => {
                       <p className="text-xs text-slate-600 mt-0.5">{item.description}</p>
 
                       {item.isUploaded && item.uploadedDocument && (
-                        <div className="mt-2 inline-flex items-center space-x-1.5 text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                          <span>Uploaded: <strong>{item.uploadedDocument.fileName}</strong> ({(item.uploadedDocument.fileSize / 1024).toFixed(1)} KB)</span>
+                        <div className={`mt-2 p-2 rounded border text-xs ${
+                          item.uploadedDocument.verificationStatus === 'VERIFIED'
+                            ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                            : item.uploadedDocument.verificationStatus === 'REJECTED'
+                              ? 'text-rose-700 bg-rose-50 border-rose-200'
+                              : 'text-amber-800 bg-amber-50 border-amber-200'
+                        }`}>
+                          <div className="flex items-center space-x-1.5">
+                            {item.uploadedDocument.verificationStatus === 'VERIFIED'
+                              ? <CheckCircle2 className="w-3.5 h-3.5" />
+                              : <AlertCircle className="w-3.5 h-3.5" />}
+                            <span><strong>{item.uploadedDocument.verificationStatus}</strong>: {item.uploadedDocument.fileName} ({(item.uploadedDocument.fileSize / 1024).toFixed(1)} KB)</span>
+                          </div>
+                          {item.uploadedDocument.verificationExplanation && (
+                            <p className="mt-1">{item.uploadedDocument.verificationExplanation}</p>
+                          )}
+                          {item.uploadedDocument.validationResults?.some((rule) => !rule.passed) && (
+                            <ul className="mt-1 list-disc list-inside">
+                              {item.uploadedDocument.validationResults
+                                .filter((rule) => !rule.passed)
+                                .map((rule) => <li key={rule.rule}>{rule.rule}: {rule.explanation}</li>)}
+                            </ul>
+                          )}
                         </div>
                       )}
                     </div>
@@ -556,7 +586,7 @@ export const NewApplicationWizardPage: React.FC = () => {
                 Step 5: Preliminary Scrutiny Validation
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
-                Deterministic automated checks evaluate mandatory documents, land metrics, and statutory completeness.
+                OCR and document-specific rules evaluate mandatory documents and statutory completeness. Automated checks do not establish authenticity or grant approval.
               </p>
             </div>
 
@@ -584,7 +614,7 @@ export const NewApplicationWizardPage: React.FC = () => {
                       <p className="text-xs opacity-90 mt-0.5">
                         {preliminaryResults.passed
                           ? 'All required category documents and statutory fields are validated. You may proceed to submit.'
-                          : 'Please rectify the following deficiencies before submitting to SAKSHAM.'}
+                          : 'Please rectify the following deficiencies before submitting to PRAVAH.'}
                       </p>
                     </div>
                   </div>
@@ -604,7 +634,7 @@ export const NewApplicationWizardPage: React.FC = () => {
                 <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600">
                   <div className="font-semibold text-slate-800 mb-1">Human Authority Safeguard:</div>
                   <p>
-                    SAKSHAM's preliminary checks assist applicant institutions and scrutiny officers. Automated clearance does not grant autonomous approval; statutory evaluation remains under authorized committee authority.
+                    PRAVAH's preliminary checks assist applicant institutions and scrutiny officers. Automated clearance does not grant autonomous approval; statutory evaluation remains under authorized committee authority.
                   </p>
                 </div>
               </div>
@@ -621,7 +651,7 @@ export const NewApplicationWizardPage: React.FC = () => {
           <div className="space-y-5">
             <div>
               <h2 className="text-base font-bold text-slate-900">
-                Step 6: Preview Application & Submit to SAKSHAM Queue
+                Step 6: Preview Application & Submit to PRAVAH Queue
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
                 Review the submission summary. Submission assigns your application to the active scrutiny queue.
@@ -665,7 +695,7 @@ export const NewApplicationWizardPage: React.FC = () => {
             <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-900">
               <div className="font-bold mb-1">Formal Submission Declaration:</div>
               <p>
-                By clicking "Submit Application to SAKSHAM", an official reference will be minted, and the application will be assigned to the AICTE Scrutiny Officer pool. You can track progress and deficiency notices directly from your dashboard.
+                By clicking "Submit Application to PRAVAH", an official reference will be minted, and the application will be assigned to the AICTE Scrutiny Officer pool. You can track progress and deficiency notices directly from your dashboard.
               </p>
             </div>
           </div>
@@ -687,7 +717,7 @@ export const NewApplicationWizardPage: React.FC = () => {
             <button
               type="button"
               onClick={handleNext}
-              disabled={isSaving}
+              disabled={isSaving || (currentStep === 5 && !preliminaryResults?.passed)}
               className="inline-flex items-center space-x-1.5 py-2 px-5 rounded-lg bg-gov-navy-950 text-white text-xs font-bold hover:bg-gov-navy-900 shadow-sm transition disabled:opacity-50"
             >
               <span>{isSaving ? 'Processing...' : 'Continue'}</span>
@@ -701,7 +731,7 @@ export const NewApplicationWizardPage: React.FC = () => {
               className="inline-flex items-center space-x-2 py-2.5 px-6 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md transition disabled:opacity-50"
             >
               <Send className="w-4 h-4" />
-              <span>{isSubmitting ? 'Submitting to Queue...' : 'Submit Application to SAKSHAM'}</span>
+              <span>{isSubmitting ? 'Submitting to Queue...' : 'Submit Application to PRAVAH'}</span>
             </button>
           )}
         </div>

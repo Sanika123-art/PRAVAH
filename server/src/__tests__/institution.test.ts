@@ -3,6 +3,7 @@ import request from 'supertest';
 import { createApp } from '../app';
 import { prisma } from '../db/prisma';
 import { DocumentType } from '@prisma/client';
+import { createSyntheticPdf } from './helpers/syntheticPdf';
 
 function extractAllCookies(res: request.Response): string[] {
   const cookies = res.headers['set-cookie'];
@@ -224,27 +225,38 @@ describe('SAKSHAM Two-Sided Platform & Institution Workflow Integration', () => 
       expect(res.body.error.message).toContain('Preliminary checks detected missing mandatory requirements');
     });
 
-    it('should simulate document upload by creating ApplicationDocument records and pass preliminary checks', async () => {
-      // Create required documents directly in DB to simulate uploaded files with hash
-      const user = await prisma.systemUser.findFirst({ where: { email: testEmail } });
-      const requiredDocs: DocumentType[] = ['LAND_LEASE', 'BUILDING_OCCUPANCY', 'FIRE_SAFETY_NOC', 'FDR_ENDOWMENT'];
+    it('should verify actual uploaded documents and pass preliminary checks', async () => {
+      const documents: Array<{ type: DocumentType; content: string[] }> = [
+        {
+          type: 'LAND_LEASE',
+          content: ['REGISTERED LAND LEASE DEED', 'Registration No: MH-2026-5011', 'Sub-Registrar Pune', 'Lease Period: 30 Years', 'Survey Number: 42/7', 'Apex Institute of Technological Excellence', 'Apex Educational Charitable Trust', 'Registered ownership title and land area certification for the campus premises.'],
+        },
+        {
+          type: 'BUILDING_OCCUPANCY',
+          content: ['BUILDING OCCUPANCY CERTIFICATE', 'Certificate No: OCC-2026-811', 'Sanctioned Building Plan Approval', 'Pune Municipal Corporation Competent Authority', 'Apex Institute of Technological Excellence', 'Apex Educational Charitable Trust', 'The completion certificate confirms occupancy and structural stability of the campus buildings.'],
+        },
+        {
+          type: 'FIRE_SAFETY_NOC',
+          content: ['FIRE SAFETY CERTIFICATE', 'Certificate No: FS-2026-9912', 'No Objection Certificate', 'Chief Fire Officer State Fire Services Authority', 'Apex Institute of Technological Excellence', 'Apex Educational Charitable Trust', 'The fire safety clearance confirms fire prevention arrangements across the institution campus.'],
+        },
+        {
+          type: 'FDR_ENDOWMENT',
+          content: ['FIXED DEPOSIT RECEIPT', 'FDR No: SBI-2026-7712', 'AICTE Endowment Fund held in joint names', 'National Bank deposit amount and maturity date', 'Apex Institute of Technological Excellence', 'Apex Educational Charitable Trust', 'This bank receipt confirms the institution endowment deposit and fixed term deposit details.'],
+        },
+      ];
 
-      for (const docType of requiredDocs) {
-        await prisma.applicationDocument.create({
-          data: {
-            applicationId: createdDraftId,
-            institutionId,
-            documentType: docType,
-            title: `${docType}_Certificate.pdf`,
-            fileName: `${docType}_Certificate.pdf`,
-            fileSize: 1024 * 500,
-            mimeType: 'application/pdf',
-            storageKey: `mock_storage_${docType}.pdf`,
-            fileHash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
-            uploadedById: user!.id,
-            verificationStatus: 'UPLOADED_PENDING_REVIEW',
-          },
-        });
+      for (const document of documents) {
+        const res = await request(app)
+          .post(`/api/institution/applications/${createdDraftId}/documents`)
+          .set('Cookie', institutionCookies)
+          .set('x-csrf-token', institutionCsrfToken)
+          .field('documentType', document.type)
+          .attach('file', createSyntheticPdf(document.content), {
+            filename: `${document.type}.pdf`,
+            contentType: 'application/pdf',
+          });
+        expect(res.status).toBe(201);
+        expect(res.body.data.verificationStatus).toBe('VERIFIED');
       }
 
       // Re-run preliminary check

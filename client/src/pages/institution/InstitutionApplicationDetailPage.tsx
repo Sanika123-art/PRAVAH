@@ -3,8 +3,12 @@ import { useParams, Link } from 'react-router-dom';
 import {
   getInstitutionApplication,
   respondToDeficiency,
+  getCategoryChecklist,
+  uploadApplicationDocument,
+  resubmitCorrectedApplication,
+  ChecklistItemStatus,
 } from '../../services/institutionService';
-import { Application, DeficiencyNotice, ApplicationDocument, ComplianceItem } from '@saksham/shared';
+import { Application, DeficiencyNotice, ApplicationDocument, ComplianceItem, DocumentType } from '@saksham/shared';
 import {
   Building2,
   FileText,
@@ -36,6 +40,7 @@ export const InstitutionApplicationDetailPage: React.FC = () => {
     documents: ApplicationDocument[];
     deficiencyNotices: DeficiencyNotice[];
     complianceItems: ComplianceItem[];
+    officerDecisions?: Array<{ id: string; decision: string; officerName: string; remarks: string; previousStage: string; resultingStage: string; createdAt: string }>;
   }) | null>(null);
 
   const [isLoading, setIsLoading] = useState(true);
@@ -44,6 +49,13 @@ export const InstitutionApplicationDetailPage: React.FC = () => {
   const [documentRef, setDocumentRef] = useState('');
   const [isSubmittingResponse, setIsSubmittingResponse] = useState(false);
   const [responseSuccessMsg, setResponseSuccessMsg] = useState<string | null>(null);
+  const [correctionChecklist, setCorrectionChecklist] = useState<ChecklistItemStatus[]>([]);
+  const [correctionType, setCorrectionType] = useState<DocumentType | ''>('');
+  const [correctionFile, setCorrectionFile] = useState<File | null>(null);
+  const [isUploadingCorrection, setIsUploadingCorrection] = useState(false);
+  const [isResubmitting, setIsResubmitting] = useState(false);
+  const [correctionMessage, setCorrectionMessage] = useState<string | null>(null);
+  const [correctionError, setCorrectionError] = useState<string | null>(null);
 
   const fetchApp = async () => {
     if (!id) return;
@@ -51,6 +63,11 @@ export const InstitutionApplicationDetailPage: React.FC = () => {
     try {
       const data = await getInstitutionApplication(id);
       setApplication(data);
+      if (data.currentStage === 'RE_SCRUTINY' && data.isDeficient) {
+        setCorrectionChecklist(await getCategoryChecklist(id));
+      } else {
+        setCorrectionChecklist([]);
+      }
     } catch (err) {
       console.error('Failed to load application details:', err);
     } finally {
@@ -86,6 +103,41 @@ export const InstitutionApplicationDetailPage: React.FC = () => {
       alert(err.message || 'Failed to submit deficiency response.');
     } finally {
       setIsSubmittingResponse(false);
+    }
+  };
+
+  const handleCorrectionUpload = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!application || !correctionType || !correctionFile) return;
+    setIsUploadingCorrection(true);
+    setCorrectionError(null);
+    setCorrectionMessage(null);
+    try {
+      const result = await uploadApplicationDocument(application.id, correctionFile, correctionType);
+      setCorrectionMessage(`${result.fileName} uploaded. Automated result: ${result.verificationStatus}. ${result.verificationExplanation || ''}`);
+      setCorrectionFile(null);
+      setCorrectionType('');
+      await fetchApp();
+    } catch (err) {
+      setCorrectionError(err instanceof Error ? err.message : 'Failed to upload the corrected document.');
+    } finally {
+      setIsUploadingCorrection(false);
+    }
+  };
+
+  const handleCorrectionResubmit = async () => {
+    if (!application) return;
+    setIsResubmitting(true);
+    setCorrectionError(null);
+    setCorrectionMessage(null);
+    try {
+      await resubmitCorrectedApplication(application.id);
+      setCorrectionMessage('Corrected documents passed server-side revalidation and were returned to officer scrutiny.');
+      await fetchApp();
+    } catch (err) {
+      setCorrectionError(err instanceof Error ? err.message : 'Correction resubmission failed.');
+    } finally {
+      setIsResubmitting(false);
     }
   };
 
@@ -164,6 +216,61 @@ export const InstitutionApplicationDetailPage: React.FC = () => {
                   >
                     {isPassed ? <CheckCircle2 className="w-4 h-4" /> : i + 1}
                   </div>
+
+                  {(application.officerDecisions?.length ?? 0) > 0 && (
+                    <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-3">
+                      <h2 className="text-sm font-bold text-slate-900">Officer decisions and remarks</h2>
+                      {application.officerDecisions?.map((decision) => (
+                        <div key={decision.id} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                          <div className="flex flex-wrap justify-between gap-2 font-bold text-xs">
+                            <span>{decision.decision.replace(/_/g, ' ')} · {decision.resultingStage.replace(/_/g, ' ')}</span>
+                            <span className="text-slate-500">{new Date(decision.createdAt).toLocaleString()} · {decision.officerName}</span>
+                          </div>
+                          <p className="mt-1 text-xs text-slate-700 whitespace-pre-line">{decision.remarks}</p>
+                        </div>
+                      ))}
+                    </section>
+                  )}
+
+                  {application.currentStage === 'RE_SCRUTINY' && application.isDeficient && (
+                    <section className="bg-amber-50 rounded-2xl border border-amber-200 shadow-sm p-5 space-y-4">
+                      <div>
+                        <h2 className="text-sm font-bold text-amber-950">Correct and resubmit application documents</h2>
+                        <p className="text-xs text-amber-900 mt-1">New uploads are checked by the server. Resubmission reruns OCR and document rules on the latest mandatory documents and preserves earlier scrutiny history.</p>
+                      </div>
+                      {correctionError && <p role="alert" className="rounded border border-rose-200 bg-white p-2 text-xs text-rose-800">{correctionError}</p>}
+                      {correctionMessage && <p className="rounded border border-emerald-200 bg-white p-2 text-xs text-emerald-800">{correctionMessage}</p>}
+                      {correctionChecklist.map((item) => (
+                        <div key={item.documentType} className="rounded-lg border border-amber-200 bg-white p-3 text-xs">
+                          <div className="flex flex-wrap justify-between gap-2">
+                            <strong>{item.title}{item.mandatory ? ' · Mandatory' : ''}</strong>
+                            <span className={item.uploadedDocument?.verificationStatus === 'VERIFIED' ? 'text-emerald-700 font-bold' : 'text-amber-800 font-bold'}>
+                              {item.uploadedDocument?.verificationStatus || 'Not uploaded'}
+                            </span>
+                          </div>
+                          <p className="mt-1 text-slate-600">{item.aphClause} · {item.description}</p>
+                          {item.uploadedDocument?.verificationExplanation && <p className="mt-1 text-slate-600">{item.uploadedDocument.verificationExplanation}</p>}
+                        </div>
+                      ))}
+                      <form onSubmit={handleCorrectionUpload} className="grid gap-2 sm:grid-cols-[1fr_1fr_auto] items-end">
+                        <label className="text-xs font-semibold text-slate-700">Document type
+                          <select required value={correctionType} onChange={(event) => setCorrectionType(event.target.value as DocumentType)} className="mt-1 block w-full rounded border border-slate-300 bg-white p-2">
+                            <option value="">Select required document</option>
+                            {correctionChecklist.map((item) => <option key={item.documentType} value={item.documentType}>{item.title}</option>)}
+                          </select>
+                        </label>
+                        <label className="text-xs font-semibold text-slate-700">Corrected file (PDF/JPEG/PNG)
+                          <input required type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" onChange={(event) => setCorrectionFile(event.target.files?.[0] || null)} className="mt-1 block w-full rounded border border-slate-300 bg-white p-1.5" />
+                        </label>
+                        <button disabled={isUploadingCorrection || !correctionType || !correctionFile} className="rounded bg-gov-navy-950 px-4 py-2 text-xs font-bold text-white disabled:opacity-50">
+                          {isUploadingCorrection ? 'Verifying…' : 'Upload & verify'}
+                        </button>
+                      </form>
+                      <button type="button" onClick={handleCorrectionResubmit} disabled={isResubmitting || correctionChecklist.some((item) => item.mandatory && item.uploadedDocument?.verificationStatus !== 'VERIFIED')} className="rounded bg-emerald-700 px-4 py-2 text-xs font-bold text-white disabled:opacity-50">
+                        {isResubmitting ? 'Revalidating…' : 'Revalidate and resubmit for scrutiny'}
+                      </button>
+                    </section>
+                  )}
                   <span
                     className={`text-[11px] font-semibold mt-2 max-w-[100px] leading-tight ${
                       isCurrent ? 'text-gov-navy-950 font-bold' : isPassed ? 'text-slate-700' : 'text-slate-400'

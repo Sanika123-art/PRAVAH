@@ -234,6 +234,7 @@ async function main() {
         lastUpdated: new Date(app.lastUpdated),
         institutionId: instId,
         isDraft: false,
+        isDemo: true,
       },
       create: {
         id: app.id,
@@ -261,6 +262,7 @@ async function main() {
         lastUpdated: new Date(app.lastUpdated),
         institutionId: instId,
         isDraft: false,
+        isDemo: true,
       },
     });
   }

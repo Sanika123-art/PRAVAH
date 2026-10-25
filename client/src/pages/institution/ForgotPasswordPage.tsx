@@ -42,7 +42,7 @@ export const ForgotPasswordPage: React.FC = () => {
             <GeometricMark size={48} />
           </div>
           <h1 className="text-2xl font-black text-gov-navy-950 tracking-tight">
-            SAKSHAM
+            PRAVAH
           </h1>
           <p className="text-xs font-bold text-gov-navy-800 uppercase tracking-widest">
             Institutional Password Recovery
@@ -59,7 +59,7 @@ export const ForgotPasswordPage: React.FC = () => {
                 Instructions Dispatched
               </h2>
               <p className="text-xs text-slate-600">
-                If the institutional address <strong>{email}</strong> is registered on SAKSHAM, a secure password reset link has been dispatched.
+                If the institutional address <strong>{email}</strong> is registered on PRAVAH, a secure password reset link has been dispatched.
               </p>
 
               {devResetToken && (
@@ -146,7 +146,7 @@ export const ForgotPasswordPage: React.FC = () => {
       </div>
 
       <footer className="py-4 text-center text-xs text-slate-500">
-        AICTE SAKSHAM Identity Verification Service
+        AICTE PRAVAH Identity Verification Service
       </footer>
     </div>
   );

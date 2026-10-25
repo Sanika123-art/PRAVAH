@@ -16,6 +16,7 @@ export interface ApplicationFilterParams {
   priority?: string;
   category?: string;
   includeDrafts?: boolean;
+  recordType?: 'ALL' | 'REAL' | 'DEMO';
   limit?: number;
   offset?: number;
 }
@@ -27,6 +28,8 @@ export const getApplicationsFromDb = async (filters: ApplicationFilterParams) =>
   if (!filters.includeDrafts) {
     where.isDraft = false;
   }
+  if (filters.recordType === 'REAL') where.isDemo = false;
+  if (filters.recordType === 'DEMO') where.isDemo = true;
 
   if (filters.search && typeof filters.search === 'string') {
     const q = filters.search.trim();

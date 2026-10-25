@@ -1,0 +1,46 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Length 810 >>
+stream
+BT /F1 12 Tf
+50 740 Td (SYNTHETIC OCR TEST SAMPLE - NOT A REAL BANK RECEIPT) Tj
+0 -20 Td (FOR SOFTWARE TESTING ONLY - NO LEGAL OR REGULATORY VALIDITY) Tj
+0 -20 Td (JOINT FIXED DEPOSIT RECEIPT) Tj
+0 -20 Td (FDR No: SBI-2026-7712) Tj
+0 -20 Td (AICTE Endowment Fund held in joint names) Tj
+0 -20 Td (Depositors: Apex Educational Charitable Trust and Regional Officer, AICTE) Tj
+0 -20 Td (Issued by State Bank of India) Tj
+0 -20 Td (Deposit Amount: INR 25,00,000) Tj
+0 -20 Td (Maturity Date: 12/05/2027) Tj
+0 -20 Td (Apex Institute of Technological Excellence) Tj
+0 -20 Td (Apex Educational Charitable Trust) Tj
+0 -20 Td (This synthetic bank receipt describes a fixed deposit for the institution endowment fund.) Tj
+0 -20 Td (This document is fabricated test data and is not issued by any bank or authority.) Tj
+ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000000311 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+1172
+%%EOF

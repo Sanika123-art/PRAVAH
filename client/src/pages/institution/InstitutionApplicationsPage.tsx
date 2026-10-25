@@ -85,7 +85,7 @@ export const InstitutionApplicationsPage: React.FC = () => {
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search by SAKSHAM Application Ref or Category..."
+            placeholder="Search by PRAVAH Application Ref or Category..."
             className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gov-navy-600"
           />
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />

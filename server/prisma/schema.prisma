@@ -83,6 +83,26 @@ enum ComplianceStatus {
   OVERDUE_ESCALATED
 }
 
+enum ScrutinyFindingSeverity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum ScrutinyReviewState {
+  PENDING
+  CONFIRMED
+  DISMISSED
+  RESOLVED
+}
+
+enum OfficerDecisionType {
+  APPROVE
+  REQUEST_CORRECTION
+  REJECT
+}
+
 enum DocumentType {
   LAND_LEASE
   FIRE_SAFETY_NOC
@@ -156,6 +176,85 @@ model SystemUser {
   @@index([institutionId])
 }
 
+model ApplicationScrutinyRun {
+  id            String                       @id @default(uuid())
+  applicationId String
+  application   Application                  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  officerId     String
+  officerName   String
+  createdAt     DateTime                     @default(now())
+  findings      ApplicationReviewFinding[]
+
+  @@index([applicationId, createdAt])
+}
+
+model ApplicationReviewFinding {
+  id                 String                    @id @default(uuid())
+  runId              String
+  run                ApplicationScrutinyRun    @relation(fields: [runId], references: [id], onDelete: Cascade)
+  applicationId      String
+  application        Application               @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  documentId         String?
+  document           ApplicationDocument?      @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  fieldName          String
+  applicationValue   String?
+  documentValue      String?
+  findingType        String
+  severity           ScrutinyFindingSeverity
+  reason             String
+  evidence            String?
+  evidencePage        Int?
+  ocrConfidence       Float?
+  recommendedAction  String
+  reviewState         ScrutinyReviewState       @default(PENDING)
+  officerNotes        String?
+  reviewedById        String?
+  reviewedByName      String?
+  reviewedAt          DateTime?
+  overrideById        String?
+  overrideByName      String?
+  overrideAt          DateTime?
+  overrideReason      String?
+  createdAt           DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
+  reviewEvents        ApplicationFindingReviewEvent[]
+
+  @@index([applicationId, runId, severity])
+  @@index([documentId])
+}
+
+model ApplicationFindingReviewEvent {
+  id          String                  @id @default(uuid())
+  findingId   String
+  finding     ApplicationReviewFinding @relation(fields: [findingId], references: [id], onDelete: Cascade)
+  officerId   String
+  officerName String
+  fromState   ScrutinyReviewState
+  toState     ScrutinyReviewState
+  note        String
+  isOverride  Boolean                 @default(false)
+  createdAt   DateTime                @default(now())
+
+  @@index([findingId, createdAt])
+}
+
+model ApplicationDecision {
+  id                    String             @id @default(uuid())
+  applicationId         String
+  application           Application        @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  officerId             String
+  officerName           String
+  officerRole           UserRole
+  decision              OfficerDecisionType
+  previousStage         ApplicationStage
+  resultingStage        ApplicationStage
+  remarks               String
+  overriddenFindingIds  String[]           @default([])
+  createdAt             DateTime           @default(now())
+
+  @@index([applicationId, createdAt])
+}
+
 model Application {
   id                   String              @id @default(uuid())
   applicationNumber    String              @unique
@@ -182,6 +281,7 @@ model Application {
   requestedIntake      Int
   academicCycle        String              @default("2026-2027")
   isDraft              Boolean             @default(false)
+  isDemo               Boolean             @default(false)
   draftData            Json?
   institutionId        String?
   institution          Institution?        @relation(fields: [institutionId], references: [id])
@@ -195,6 +295,9 @@ model Application {
   validityDocuments    DocumentValidityRecord[]
   documents            ApplicationDocument[]
   deficiencyNotices    DeficiencyNotice[]
+  scrutinyRuns         ApplicationScrutinyRun[]
+  officerFindings      ApplicationReviewFinding[]
+  officerDecisions     ApplicationDecision[]
 
   @@index([currentStage, region])
   @@index([submissionDate])
@@ -202,6 +305,7 @@ model Application {
   @@index([category])
   @@index([institutionId])
   @@index([isDraft])
+  @@index([isDemo, currentStage])
 }
 
 model ApplicationDocument {
@@ -221,8 +325,16 @@ model ApplicationDocument {
   uploadedBy         SystemUser   @relation(fields: [uploadedById], references: [id])
   verificationStatus String       @default("PENDING_REVIEW") // PENDING_REVIEW, VERIFIED, DEFICIENT, RETURNED
   remarks            String?
+  detectedDocumentType DocumentType?
+  extractedFields    Json?
+  validationResults  Json?
+  verificationExplanation String?
+  ocrConfidence      Float?
+  ocrMethod          String?
+  ocrEvidence        Json?
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
+  officerFindings    ApplicationReviewFinding[]
 
   @@index([applicationId])
   @@index([institutionId])

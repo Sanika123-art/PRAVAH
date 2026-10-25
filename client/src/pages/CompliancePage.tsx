@@ -72,7 +72,7 @@ export const CompliancePage: React.FC = () => {
             Time-Bound Institutional Undertakings & Conditional Grants
           </h3>
           <p className="text-slate-600 mt-1">
-            Where approvals are granted conditionally subject to statutory affidavits (e.g. 90-day Fire Safety NOC renewal, cadre ratio rectification, or revenue mutation), SAKSHAM automatically monitors submission deadlines and triggers multi-tier escalations.
+            Where approvals are granted conditionally subject to statutory affidavits (e.g. 90-day Fire Safety NOC renewal, cadre ratio rectification, or revenue mutation), PRAVAH automatically monitors submission deadlines and triggers multi-tier escalations.
           </p>
         </div>
         <div className="flex items-center space-x-2 text-xs">
@@ -133,7 +133,7 @@ export const CompliancePage: React.FC = () => {
 
       {/* Main Content Area */}
       {loading ? (
-        <LoadingState message="Querying live compliance records from SAKSHAM PostgreSQL service..." />
+        <LoadingState message="Querying live compliance records from PRAVAH PostgreSQL service..." />
       ) : error ? (
         <ErrorState message={error} onRetry={loadComplianceData} />
       ) : filteredItems.length === 0 ? (

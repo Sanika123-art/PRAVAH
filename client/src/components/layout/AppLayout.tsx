@@ -4,6 +4,8 @@ import { IndiaFlag, CouncilEmblem } from '../common/GovtEmblem';
 import { useAuth, PRESET_USERS } from '../../context/AuthContext';
 import { UserRole } from '@saksham/shared';
 import { CommandPalette } from '../features/CommandPalette';
+import { LanguageSelector } from '../common/LanguageSelector';
+import { useLanguage } from '../../context/LanguageContext';
 import {
   LayoutDashboard,
   FileText,
@@ -26,13 +28,13 @@ import {
   Volume2,
   Pause,
   Play,
-  Languages,
   Eye,
   SlidersHorizontal,
 } from 'lucide-react';
 
 export const AppLayout: React.FC = () => {
   const { currentUser, switchRole, logout } = useAuth();
+  const { t } = useLanguage();
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -40,7 +42,6 @@ export const AppLayout: React.FC = () => {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [tickerPaused, setTickerPaused] = useState(false);
   const [fontSizeScale, setFontSizeScale] = useState<number>(1);
-  const [selectedLang, setSelectedLang] = useState<'EN' | 'HI'>('EN');
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
 
   useEffect(() => {
@@ -176,38 +177,32 @@ export const AppLayout: React.FC = () => {
               <button
                 onClick={() => changeFontSize(-0.05)}
                 className="hover:text-white px-1 font-bold text-[10px]"
-                title="Decrease font size"
+                title={t('Decrease font size')}
               >
                 A-
               </button>
               <button
                 onClick={resetFontSize}
                 className="hover:text-white px-1 font-semibold text-[10px] text-amber-300"
-                title="Reset font size"
+                title={t('Reset font size')}
               >
                 A
               </button>
               <button
                 onClick={() => changeFontSize(0.05)}
                 className="hover:text-white px-1 font-bold text-[11px]"
-                title="Increase font size"
+                title={t('Increase font size')}
               >
                 A+
               </button>
             </div>
 
             {/* Language Switcher */}
-            <button
-              onClick={() => setSelectedLang(selectedLang === 'EN' ? 'HI' : 'EN')}
-              className="flex items-center space-x-1 hover:text-white font-medium"
-            >
-              <Languages className="w-3.5 h-3.5 text-gov-saffron-400" />
-              <span>{selectedLang === 'EN' ? 'English' : 'हिन्दी'}</span>
-            </button>
+            <LanguageSelector />
 
             <span className="hidden sm:inline text-slate-600">|</span>
             <span className="hidden sm:inline text-slate-300 font-mono">
-              Academic Cycle: <strong>2026–2027</strong>
+              {t('Academic Cycle')}: <strong>2026–2027</strong>
             </span>
           </div>
         </div>
@@ -229,7 +224,7 @@ export const AppLayout: React.FC = () => {
                 </h1>
                 <div className="flex items-center space-x-2 mt-0.5">
                   <span className="font-extrabold text-xs text-gov-navy-800 tracking-wider">
-                    SAKSHAM
+                    PRAVAH
                   </span>
                   <span className="text-[11px] text-slate-600 hidden sm:inline">
                     — Approval Workflow Automation & Compliance Management System
@@ -252,7 +247,7 @@ export const AppLayout: React.FC = () => {
               <input
                 type="text"
                 readOnly
-                placeholder="Search or press Ctrl + K..."
+                placeholder={t('Search or press Ctrl + K...')}
                 className="w-full bg-slate-50 border border-slate-300 rounded-md py-2 pl-9 pr-16 text-xs text-slate-900 placeholder-slate-500 cursor-pointer hover:border-gov-navy-600 focus:outline-none transition"
               />
               <Search className="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5" />
@@ -266,7 +261,7 @@ export const AppLayout: React.FC = () => {
               <button
                 onClick={() => setNotificationsOpen(!notificationsOpen)}
                 className="p-2 rounded-md border border-slate-200 text-slate-700 hover:text-gov-navy-900 hover:bg-slate-100 relative transition"
-                aria-label="View alerts"
+                aria-label={t('View alerts')}
               >
                 <Bell className="w-4 h-4" />
                 <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-rose-600 ring-2 ring-white"></span>
@@ -275,12 +270,12 @@ export const AppLayout: React.FC = () => {
               {notificationsOpen && (
                 <div className="absolute right-0 mt-2 w-80 bg-white text-slate-900 rounded-lg shadow-2xl border border-slate-200 p-3 z-50 animate-in fade-in duration-150">
                   <div className="flex items-center justify-between pb-2 border-b border-slate-100 text-xs">
-                    <span className="font-bold text-slate-800">Operational Notices (3 Critical)</span>
+                    <span className="font-bold text-slate-800">{t('Operational Notices (3 Critical)')}</span>
                     <button
                       className="text-[11px] text-gov-navy-700 hover:underline"
                       onClick={() => setNotificationsOpen(false)}
                     >
-                      Dismiss
+                      {t('Dismiss')}
                     </button>
                   </div>
                   <div className="divide-y divide-slate-100 max-h-64 overflow-y-auto text-xs py-1">
@@ -314,7 +309,7 @@ export const AppLayout: React.FC = () => {
                     onClick={() => setNotificationsOpen(false)}
                     className="block text-center text-xs font-semibold text-gov-navy-800 pt-2 border-t border-slate-100 hover:text-gov-navy-950"
                   >
-                    View All Priority Alerts &rarr;
+                    {t('View All Priority Alerts →')}
                   </NavLink>
                 </div>
               )}
@@ -341,7 +336,7 @@ export const AppLayout: React.FC = () => {
               {userDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-72 bg-white text-slate-900 rounded-lg shadow-2xl border border-slate-200 py-2 z-50 animate-in fade-in duration-150">
                   <div className="px-4 py-2 border-b border-slate-100 text-xs">
-                    <p className="text-slate-500 font-medium">Logged in Officer:</p>
+                    <p className="text-slate-500 font-medium">{t('Logged in Officer:')}</p>
                     <p className="font-bold text-slate-900">{currentUser?.name || 'Officer'}</p>
                     <p className="text-[11px] text-slate-600">{currentUser?.designation || 'Technical Officer'}</p>
                     <p className="text-[10px] text-gov-navy-800 font-medium mt-0.5">{currentUser?.region || 'National Scope'}</p>
@@ -352,12 +347,12 @@ export const AppLayout: React.FC = () => {
                     <div className="px-3 py-2 text-xs border-b border-slate-100 bg-amber-50/50">
                       <div className="flex items-center justify-between mb-1.5">
                         <span className="text-[10px] font-bold text-amber-900 uppercase tracking-wider">
-                          Dev Persona Simulator
+                          {t('Dev Persona Simulator')}
                         </span>
                         <span className="text-[9px] bg-amber-200 text-amber-900 px-1 rounded font-semibold">DEV ONLY</span>
                       </div>
                       <p className="text-[10px] text-slate-500 mb-1.5">
-                        Authenticates via backend Argon2id & sets HttpOnly cookie session.
+                        {t('Authenticates via backend Argon2id & sets HttpOnly cookie session.')}
                       </p>
                       <div className="max-h-48 overflow-y-auto space-y-1">
                         {Object.entries(PRESET_USERS).map(([roleKey, profile]) => (
@@ -483,7 +478,7 @@ export const AppLayout: React.FC = () => {
                   }
                 >
                   <Icon className="w-4 h-4 flex-shrink-0 opacity-90" />
-                  <span>{item.label}</span>
+                  <span>{t(item.label)}</span>
                   {item.badge && (
                     <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-500/20 text-amber-300 border border-amber-400/30 font-bold">
                       {item.badge}
@@ -500,12 +495,12 @@ export const AppLayout: React.FC = () => {
           {/* Mobile Navigation Trigger */}
           <div className="flex items-center justify-between w-full lg:w-auto py-2.5 lg:py-0">
             <span className="text-xs font-bold text-amber-300 uppercase tracking-wider lg:hidden">
-              Menu Navigation
+              {t('Menu Navigation')}
             </span>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="lg:hidden p-1.5 rounded text-slate-200 hover:text-white hover:bg-gov-navy-800"
-              aria-label="Toggle menu"
+              aria-label={t('Menu Navigation')}
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -515,7 +510,7 @@ export const AppLayout: React.FC = () => {
           <div className="hidden xl:flex items-center space-x-3 text-xs text-slate-300 py-1">
             <span className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-              <span className="text-[11px] text-slate-300 font-medium">Approval Engine Online</span>
+              <span className="text-[11px] text-slate-300 font-medium">{t('Approval Engine Online')}</span>
             </span>
           </div>
         </div>
@@ -538,7 +533,7 @@ export const AppLayout: React.FC = () => {
                 >
                   <div className="flex items-center space-x-2.5">
                     <Icon className="w-4 h-4" />
-                    <span>{item.label}</span>
+                    <span>{t(item.label)}</span>
                   </div>
                   {item.badge && (
                     <span className="px-2 py-0.5 rounded-full text-[10px] bg-amber-500/20 text-amber-300">
@@ -567,9 +562,9 @@ export const AppLayout: React.FC = () => {
               </span>
             </div>
             <h1 className="text-xl sm:text-2xl font-extrabold text-gov-navy-950 tracking-tight">
-              {meta.title}
+              {t(meta.title)}
             </h1>
-            <p className="text-xs text-slate-600 mt-0.5">{meta.subtitle}</p>
+            <p className="text-xs text-slate-600 mt-0.5">{t(meta.subtitle)}</p>
           </div>
 
           <div className="flex items-center space-x-2 flex-shrink-0">
@@ -592,7 +587,7 @@ export const AppLayout: React.FC = () => {
               <div className="flex items-center space-x-3">
                 <CouncilEmblem size={44} />
                 <div>
-                  <p className="font-extrabold text-sm text-white">SAKSHAM PORTAL</p>
+                  <p className="font-extrabold text-sm text-white">PRAVAH PORTAL</p>
                   <p className="text-[11px] text-amber-300">All India Council for Technical Education</p>
                 </div>
               </div>
@@ -644,4 +639,3 @@ export const AppLayout: React.FC = () => {
     </div>
   );
 };
-

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate, useLocation, Outlet, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { UserRole } from '@saksham/shared';
 import { ShieldAlert } from 'lucide-react';
 import { CouncilEmblem } from './GovtEmblem';
@@ -12,6 +13,7 @@ interface ProtectedRouteProps {
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles, children }) => {
   const { currentUser, isAuthenticated, isLoading } = useAuth();
+  const { t } = useLanguage();
   const location = useLocation();
 
   // 1. Loading state while verifying authoritative server-side session
@@ -30,7 +32,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles, ch
             <span>Verifying Officer Digital Credentials...</span>
           </div>
           <p className="text-xs text-slate-500 font-medium">
-            Contacting SAKSHAM authoritative server-side identity provider.
+            Contacting PRAVAH authoritative server-side identity provider.
           </p>
         </div>
       </div>
@@ -42,6 +44,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles, ch
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  if (currentUser.role === 'INSTITUTION_USER' && !location.pathname.startsWith('/institution')) {
+    return <Navigate to="/institution/dashboard" replace />;
+  }
+
   // 3. Role authorization check
   if (allowedRoles && allowedRoles.length > 0 && !allowedRoles.includes(currentUser.role)) {
     return (
@@ -51,25 +57,25 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles, ch
             <ShieldAlert className="w-6 h-6" />
           </div>
           <h2 className="text-lg font-bold text-slate-900">
-            Statutory Jurisdiction & RBAC Restriction
+            {t('Statutory Jurisdiction & RBAC Restriction')}
           </h2>
           <p className="text-xs text-slate-600 leading-relaxed">
-            Your authenticated role (<strong>{currentUser.role.replace(/_/g, ' ')}</strong>) is not authorized to access this module under AICTE approval regulations.
+            {t('Your authenticated role')} (<strong>{t(currentUser.role.replace(/_/g, ' '))}</strong>) {t('is not authorized to access this module under AICTE approval regulations.')}
           </p>
           <div className="bg-slate-50 p-3 rounded text-[11px] font-mono text-slate-700 border border-slate-200 text-left">
-            <div>Authorized Roles: <strong>{allowedRoles.join(', ')}</strong></div>
-            <div>Current Officer: <strong>{currentUser.fullName} ({currentUser.username})</strong></div>
-            <div>Jurisdiction: <strong>{currentUser.region || 'National Pool'}</strong></div>
+            <div>{t('Authorized Roles')}: <strong>{allowedRoles.map((role) => t(role.replace(/_/g, ' '))).join(', ')}</strong></div>
+            <div>{t('Current User')}: <strong>{currentUser.fullName} ({currentUser.username})</strong></div>
+            <div>{t('Jurisdiction')}: <strong>{currentUser.region || t('National Pool')}</strong></div>
           </div>
           <div className="pt-2">
             <Link
-              to="/dashboard"
+              to={currentUser.role === 'INSTITUTION_USER' ? '/institution/dashboard' : '/dashboard'}
               className="inline-flex items-center px-4 py-2 rounded-md bg-gov-navy-900 text-white text-xs font-semibold hover:bg-gov-navy-800 transition"
             >
               <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
-              Return to Executive Dashboard
+              {t(currentUser.role === 'INSTITUTION_USER' ? 'Return to Institution Dashboard' : 'Return to Executive Dashboard')}
             </Link>
           </div>
         </div>

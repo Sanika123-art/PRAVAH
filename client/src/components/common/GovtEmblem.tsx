@@ -33,7 +33,7 @@ export const IndiaFlag: React.FC<{ className?: string; width?: number; height?: 
 };
 
 /**
- * SAKSHAM / Technical Education Golden Seal & Emblem
+ * PRAVAH / Technical Education Golden Seal & Emblem
  * Represents statutory authority, technical education excellence, and automated scrutiny.
  */
 export const CouncilEmblem: React.FC<{ size?: number; className?: string }> = ({
@@ -48,7 +48,7 @@ export const CouncilEmblem: React.FC<{ size?: number; className?: string }> = ({
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={`flex-shrink-0 ${className}`}
-      aria-label="AICTE SAKSHAM Seal"
+      aria-label="AICTE PRAVAH Seal"
     >
       {/* Outer Golden Gear / Sun Ring */}
       <circle cx="32" cy="32" r="30" fill="#0A1B38" stroke="#D97706" strokeWidth="2" />

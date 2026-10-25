@@ -198,7 +198,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
         {/* Footer */}
         <div className="px-4 py-2 bg-slate-100 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-500 font-mono">
           <span>Navigate with Arrows or Click</span>
-          <span>SAKSHAM Command Palette</span>
+          <span>PRAVAH Command Palette</span>
         </div>
       </div>
     </div>

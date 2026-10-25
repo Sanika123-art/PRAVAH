@@ -6,11 +6,13 @@ import {
   ComplianceStatus,
   EVCStatus,
 } from '@saksham/shared';
+import { useLanguage } from '../../context/LanguageContext';
 
 export const StageBadge: React.FC<{ stage: ApplicationStage; className?: string }> = ({
   stage,
   className = '',
 }) => {
+  const { t } = useLanguage();
   const configs: Record<ApplicationStage, { label: string; bg: string; text: string; border: string }> = {
     SUBMITTED: { label: 'Submitted', bg: 'bg-slate-100', text: 'text-slate-700', border: 'border-slate-300' },
     SCRUTINY: { label: 'Scrutiny', bg: 'bg-blue-50', text: 'text-blue-800', border: 'border-blue-200' },
@@ -31,7 +33,7 @@ export const StageBadge: React.FC<{ stage: ApplicationStage; className?: string 
       className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${config.bg} ${config.text} ${config.border} ${className}`}
     >
       <span className="w-1.5 h-1.5 rounded-full mr-1.5 bg-current opacity-75"></span>
-      {config.label}
+      {t(config.label)}
     </span>
   );
 };
@@ -40,6 +42,7 @@ export const PriorityBadge: React.FC<{ priority: PriorityLevel; className?: stri
   priority,
   className = '',
 }) => {
+  const { t } = useLanguage();
   const configs: Record<PriorityLevel, { label: string; bg: string; text?: string; dot?: boolean }> = {
     NORMAL: { label: 'Normal', bg: 'bg-slate-100 text-slate-700 border-slate-200' },
     MEDIUM: { label: 'Medium', bg: 'bg-sky-50 text-sky-700 border-sky-200' },
@@ -56,7 +59,7 @@ export const PriorityBadge: React.FC<{ priority: PriorityLevel; className?: stri
       {config.dot && (
         <span className="w-2 h-2 rounded-full mr-1.5 bg-rose-500 animate-pulse"></span>
       )}
-      {config.label}
+      {t(config.label)}
     </span>
   );
 };
@@ -65,29 +68,30 @@ export const ValidityBadge: React.FC<{ status: ValidityStatus; days: number }> =
   status,
   days,
 }) => {
+  const { t } = useLanguage();
   switch (status) {
     case 'VALID':
       return (
         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-300">
-          Valid ({days > 0 ? `${days}d` : 'Current'})
+          {t('Valid')} ({days > 0 ? `${days}d` : t('Current')})
         </span>
       );
     case 'EXPIRING_SOON':
       return (
         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-800 border border-amber-300">
-          Expiring in {days}d
+          {t('Expiring in')} {days}d
         </span>
       );
     case 'CRITICAL_WARNING':
       return (
         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-orange-50 text-orange-800 border border-orange-300">
-          Urgent ({days}d left)
+          {t('Urgent')} ({days}d {t('left')})
         </span>
       );
     case 'EXPIRED':
       return (
         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-rose-50 text-rose-800 border border-rose-300">
-          Expired ({Math.abs(days)}d ago)
+          {t('Expired')} ({Math.abs(days)}d {t('ago')})
         </span>
       );
     default:
@@ -99,30 +103,31 @@ export const ComplianceBadge: React.FC<{ status: ComplianceStatus; daysRemaining
   status,
   daysRemaining,
 }) => {
+  const { t } = useLanguage();
   switch (status) {
     case 'VERIFIED_SATISFACTORY':
       return (
         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-300">
-          Verified Satisfactory
+          {t('Verified Satisfactory')}
         </span>
       );
     case 'UNDER_REVIEW':
       return (
         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-50 text-indigo-800 border border-indigo-200">
-          Under Review
+          {t('Under Review')}
         </span>
       );
     case 'OVERDUE_ESCALATED':
       return (
         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-300">
-          Overdue ({Math.abs(daysRemaining)}d)
+          {t('Overdue')} ({Math.abs(daysRemaining)}d)
         </span>
       );
     case 'ACTIVE_PENDING':
     default:
       return (
         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-sky-50 text-sky-800 border border-sky-300">
-          Due in {daysRemaining}d
+          {t('Due in')} {daysRemaining}d
         </span>
       );
   }
@@ -132,42 +137,43 @@ export const EVCBadge: React.FC<{ status: EVCStatus; delayHours?: number }> = ({
   status,
   delayHours = 0,
 }) => {
+  const { t } = useLanguage();
   switch (status) {
     case 'SCHEDULED':
       return (
         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-cyan-50 text-cyan-800 border border-cyan-300">
-          Visit Scheduled
+          {t('Visit Scheduled')}
         </span>
       );
     case 'CONSTITUTED':
       return (
         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-800 border border-blue-200">
-          Committee Constituted
+          {t('Committee Constituted')}
         </span>
       );
     case 'VISIT_COMPLETED':
       return (
         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-teal-50 text-teal-800 border border-teal-300">
-          Visit Done (Report Awaited)
+          {t('Visit Done (Report Awaited)')}
         </span>
       );
     case 'REPORT_SUBMITTED':
       return (
         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-300">
-          Report Uploaded
+          {t('Report Uploaded')}
         </span>
       );
     case 'REPORT_OVERDUE':
       return (
         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-300">
-          Report Overdue (+{delayHours}h)
+          {t('Report Overdue')} (+{delayHours}h)
         </span>
       );
     case 'PENDING_CONSTITUTION':
     default:
       return (
         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700 border border-slate-300">
-          Constitution Pending
+          {t('Constitution Pending')}
         </span>
       );
   }

@@ -107,7 +107,7 @@ export const InstitutionDashboardPage: React.FC = () => {
             <FileText className="w-4 h-4 text-blue-600" />
           </div>
           <div className="text-2xl font-black text-slate-900">{submittedApps.length}</div>
-          <div className="text-[11px] text-slate-500 mt-0.5">Submitted to SAKSHAM</div>
+          <div className="text-[11px] text-slate-500 mt-0.5">Submitted to PRAVAH</div>
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">

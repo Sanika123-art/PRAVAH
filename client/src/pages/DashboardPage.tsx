@@ -63,7 +63,7 @@ export const DashboardPage: React.FC = () => {
       setApplications(appsRes.data);
       setRecentAuditLogs(auditLogs);
     } catch (err: any) {
-      setError(err.message || 'Failed to connect to SAKSHAM PostgreSQL service.');
+      setError(err.message || 'Failed to connect to PRAVAH PostgreSQL service.');
     } finally {
       setLoading(false);
     }

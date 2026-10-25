@@ -23,6 +23,10 @@ export interface ChecklistItemStatus {
     fileSize: number;
     mimeType: string;
     verificationStatus: string;
+    detectedDocumentType?: DocumentType | null;
+    extractedFields?: Record<string, string | null> | null;
+    validationResults?: Array<{ rule: string; passed: boolean; explanation: string }> | null;
+    verificationExplanation?: string | null;
     uploadedAt: string;
   } | null;
 }
@@ -120,6 +124,14 @@ export const submitApplication = async (applicationId: string): Promise<{
 }> => {
   const res = await apiPost<{ success: boolean; data: { application: Application; message: string } }>(
     `/institution/applications/${applicationId}/submit`
+  );
+  return res.data;
+};
+
+export const resubmitCorrectedApplication = async (applicationId: string): Promise<Application> => {
+  const res = await apiPost<{ success: boolean; data: Application }>(
+    `/institution/applications/${applicationId}/resubmit-correction`,
+    {}
   );
   return res.data;
 };

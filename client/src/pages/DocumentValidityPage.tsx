@@ -160,7 +160,7 @@ export const DocumentValidityPage: React.FC = () => {
 
       {/* Main Content Area */}
       {loading ? (
-        <LoadingState message="Querying live document instruments from SAKSHAM PostgreSQL service..." />
+        <LoadingState message="Querying live document instruments from PRAVAH PostgreSQL service..." />
       ) : error ? (
         <ErrorState message={error} onRetry={loadDocumentData} />
       ) : filteredDocs.length === 0 ? (

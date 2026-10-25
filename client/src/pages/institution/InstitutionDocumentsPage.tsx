@@ -106,9 +106,21 @@ export const InstitutionDocumentsPage: React.FC = () => {
                       {doc.fileHash ? doc.fileHash.slice(0, 14) + '...' : 'SHA-256 Verified'}
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
+                      <span
+                        title={doc.verificationExplanation || undefined}
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          doc.verificationStatus === 'VERIFIED'
+                            ? 'bg-emerald-100 text-emerald-800'
+                            : doc.verificationStatus === 'REJECTED'
+                              ? 'bg-rose-100 text-rose-800'
+                              : 'bg-amber-100 text-amber-800'
+                        }`}
+                      >
                         {doc.verificationStatus}
                       </span>
+                      {doc.verificationExplanation && (
+                        <p className="mt-1 max-w-xs text-[10px] text-slate-500">{doc.verificationExplanation}</p>
+                      )}
                     </td>
                     <td className="py-3.5 px-4 text-right">
                       <a

@@ -11,6 +11,7 @@ import {
   downloadDocumentFile,
   checkPreliminary,
   submit,
+  resubmitCorrection,
   getDeficiencies,
   respondDeficiency,
   getCompliance,
@@ -19,7 +20,7 @@ import {
   markNotificationRead,
 } from '../controllers/institutionController';
 import { requireAuth, requireInstitution } from '../middleware/authMiddleware';
-import { documentUpload } from '../services/documentStorageService';
+import { uploadDocumentFile } from '../services/documentStorageService';
 
 const router = Router();
 
@@ -39,9 +40,10 @@ router.get('/applications/:id', getApplicationById);
 router.post('/applications/draft', createDraft);
 router.put('/applications/:id/draft', updateDraft);
 router.get('/applications/:id/checklist', getChecklist);
-router.post('/applications/:id/documents', documentUpload.single('file'), uploadDocument);
+router.post('/applications/:id/documents', uploadDocumentFile, uploadDocument);
 router.post('/applications/:id/preliminary-checks', checkPreliminary);
 router.post('/applications/:id/submit', submit);
+router.post('/applications/:id/resubmit-correction', resubmitCorrection);
 
 // Deficiencies
 router.get('/deficiencies', getDeficiencies);

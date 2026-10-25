@@ -11,6 +11,7 @@ import {
   uploadApplicationDocument,
   runPreliminaryChecks,
   submitApplication,
+  resubmitCorrectedApplication,
   getInstitutionDeficiencies,
   respondToDeficiencyNotice,
   getInstitutionCompliance,
@@ -142,12 +143,17 @@ export const uploadDocument = async (req: Request, res: Response, next: NextFunc
     const documentType = req.body.documentType as DocumentType;
 
     if (!file) {
-      res.status(400).json({ success: false, error: { message: 'No document file uploaded.', statusCode: 400 } });
+      res.status(400).json({ success: false, error: { message: 'No supported file uploaded. Accepted formats are PDF, JPEG, or PNG (maximum 10 MB).', statusCode: 400 } });
       return;
     }
 
     if (!documentType) {
       res.status(400).json({ success: false, error: { message: 'DocumentType is required.', statusCode: 400 } });
+      return;
+    }
+
+    if (!Object.values(DocumentType).includes(documentType)) {
+      res.status(400).json({ success: false, error: { message: 'Unsupported document type.', statusCode: 400 } });
       return;
     }
 
@@ -177,9 +183,25 @@ export const downloadDocumentFile = async (req: Request, res: Response, next: Ne
       return;
     }
 
+    const permittedOfficerRoles = ['SCRUTINY_OFFICER', 'REGIONAL_OFFICER', 'MEMBER_SECRETARY', 'SYSTEM_ADMIN'];
+    if (req.user?.role !== 'INSTITUTION_USER' && !permittedOfficerRoles.includes(req.user?.role || '')) {
+      res.status(403).json({ success: false, error: { message: 'This role is not authorized to access application documents.', statusCode: 403 } });
+      return;
+    }
+
+    if (doc.applicationId !== req.params.id) {
+      res.status(404).json({ success: false, error: { message: 'Document not found for this application.', statusCode: 404 } });
+      return;
+    }
+
     // Tenant check: Institution users can ONLY access documents belonging to their institution
     if (req.user?.role === 'INSTITUTION_USER' && doc.institutionId !== req.user.institutionId) {
       res.status(403).json({ success: false, error: { message: 'Access denied to document belonging to another institution.', statusCode: 403 } });
+      return;
+    }
+
+    if (req.user?.role === 'REGIONAL_OFFICER' && req.user.region !== doc.application.region) {
+      res.status(403).json({ success: false, error: { message: 'Access denied outside the officer assigned region.', statusCode: 403 } });
       return;
     }
 
@@ -190,7 +212,8 @@ export const downloadDocumentFile = async (req: Request, res: Response, next: Ne
     }
 
     res.setHeader('Content-Type', doc.mimeType);
-    res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(doc.fileName)}"`);
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(doc.fileName)}"`);
     res.sendFile(filePath);
   } catch (error) {
     next(error);
@@ -234,6 +257,27 @@ export const submit = async (req: Request, res: Response, next: NextFunction): P
           statusCode: error.statusCode,
           details: error.details,
         },
+      });
+      return;
+    }
+    next(error);
+  }
+};
+
+export const resubmitCorrection = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const result = await resubmitCorrectedApplication(
+      req.user!.institutionId!,
+      req.params.id,
+      req.user!.id,
+      req.user!.fullName
+    );
+    res.status(200).json({ success: true, data: result, message: 'Corrected documents were revalidated and returned to officer scrutiny.' });
+  } catch (error) {
+    if (error instanceof InstitutionError) {
+      res.status(error.statusCode).json({
+        success: false,
+        error: { message: error.message, statusCode: error.statusCode, details: error.details },
       });
       return;
     }

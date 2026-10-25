@@ -3,6 +3,20 @@ import { calculateDashboardMetrics, MOCK_APPLICATIONS } from '@saksham/shared';
 import { apiGet, ApiError } from '../services/apiClient';
 import { fetchApplications, fetchApplicationById } from '../services/applicationService';
 import { fetchDashboardMetrics } from '../services/metricsService';
+import en from '../locales/en';
+import hi from '../locales/hi';
+
+describe('English and Hindi locale catalogs', () => {
+  it('provides a non-empty Hindi translation for every English catalog entry', () => {
+    expect(Object.keys(hi).sort()).toEqual(Object.keys(en).sort());
+    expect(Object.values(hi).every((value) => value.trim().length > 0)).toBe(true);
+  });
+
+  it('keeps English as the source-language catalog', () => {
+    expect(en['Executive Dashboard']).toBe('Executive Dashboard');
+    expect(hi['Executive Dashboard']).toBe('कार्यकारी डैशबोर्ड');
+  });
+});
 
 describe('SAKSHAM Frontend Metrics & Integrity', () => {
   it('correctly calculates total application count from mock dataset', () => {

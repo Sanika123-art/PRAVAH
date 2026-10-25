@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate, Link } from 'react-router-dom';
 import { GeometricMark } from '../common/GeometricMark';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
+import { LanguageSelector } from '../common/LanguageSelector';
 import { getInstitutionNotifications, markNotificationAsRead } from '../../services/institutionService';
 import { Notification } from '@saksham/shared';
 import {
@@ -22,6 +24,7 @@ import {
 
 export const InstitutionLayout: React.FC = () => {
   const { currentUser, logout } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -79,11 +82,11 @@ export const InstitutionLayout: React.FC = () => {
         <div className="flex items-center space-x-2">
           <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
           <span className="font-medium tracking-wide">
-            AICTE National Approval Portal • Institutional Interface
+            {t('AICTE National Approval Portal • Institutional Interface')}
           </span>
         </div>
         <div className="flex items-center space-x-4 text-slate-300">
-          <span className="hidden sm:inline">Academic Year: 2026–27</span>
+          <span className="hidden sm:inline">{t('Academic Year: 2026–27')}</span>
           <span className="bg-gov-navy-800 px-2 py-0.5 rounded text-[10px] text-amber-300 font-mono font-bold">
             PID: {currentUser?.permanentInstituteId || 'Pending'}
           </span>
@@ -100,7 +103,7 @@ export const InstitutionLayout: React.FC = () => {
                 <GeometricMark size={36} />
                 <div>
                   <div className="flex items-center space-x-1.5">
-                    <span className="text-base font-black text-gov-navy-950 tracking-tight">SAKSHAM</span>
+                    <span className="text-base font-black text-gov-navy-950 tracking-tight">PRAVAH</span>
                     <span className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.2 rounded font-bold uppercase">
                       Institution
                     </span>
@@ -129,7 +132,7 @@ export const InstitutionLayout: React.FC = () => {
                     }
                   >
                     <Icon className="w-4 h-4" />
-                    <span>{item.name}</span>
+                    <span>{t(item.name)}</span>
                   </NavLink>
                 );
               })}
@@ -137,12 +140,13 @@ export const InstitutionLayout: React.FC = () => {
 
             {/* Right: Actions, Notifications & Sign Out */}
             <div className="flex items-center space-x-2 sm:space-x-3">
+              <LanguageSelector />
               <Link
                 to="/institution/applications/new"
                 className="hidden sm:inline-flex items-center space-x-1.5 py-1.5 px-3 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 shadow-sm transition"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>New Application</span>
+                <span>{t('New Application')}</span>
               </Link>
 
               {/* Notification Popover */}
@@ -151,7 +155,7 @@ export const InstitutionLayout: React.FC = () => {
                   type="button"
                   onClick={() => setNotificationsOpen(!notificationsOpen)}
                   className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 relative focus:outline-none"
-                  aria-label="Notifications"
+                  aria-label={t('Notifications & Deficiencies')}
                 >
                   <Bell className="w-5 h-5" />
                   {unreadCount > 0 && (
@@ -164,13 +168,13 @@ export const InstitutionLayout: React.FC = () => {
                 {notificationsOpen && (
                   <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-xl shadow-2xl border border-slate-200 py-2 z-50 animate-in fade-in slide-in-from-top-2">
                     <div className="px-4 py-2 border-b border-slate-100 flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-900">Notifications & Deficiencies</span>
-                      <span className="text-[10px] text-slate-500">{unreadCount} unread</span>
+                      <span className="text-xs font-bold text-slate-900">{t('Notifications & Deficiencies')}</span>
+                      <span className="text-[10px] text-slate-500">{unreadCount} {t('unread')}</span>
                     </div>
                     <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
                       {notifications.length === 0 ? (
                         <div className="p-4 text-center text-xs text-slate-500">
-                          No notifications at this time.
+                          {t('No notifications at this time.')}
                         </div>
                       ) : (
                         notifications.map((n) => (
@@ -218,7 +222,7 @@ export const InstitutionLayout: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleLogout}
-                  title="Sign out of SAKSHAM"
+                  title={t('Sign out')}
                   className="p-2 text-slate-600 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition"
                 >
                   <LogOut className="w-4 h-4" />
@@ -258,7 +262,7 @@ export const InstitutionLayout: React.FC = () => {
                   }
                 >
                   <Icon className="w-4 h-4" />
-                  <span>{item.name}</span>
+                  <span>{t(item.name)}</span>
                 </NavLink>
               );
             })}
@@ -268,7 +272,7 @@ export const InstitutionLayout: React.FC = () => {
               className="flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-bold bg-blue-600 text-white mt-2"
             >
               <Plus className="w-4 h-4" />
-              <span>Create New Application</span>
+              <span>{t('New Application')}</span>
             </Link>
           </div>
         )}
@@ -283,7 +287,7 @@ export const InstitutionLayout: React.FC = () => {
       <footer className="bg-white border-t border-slate-200 py-6 text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-2">
           <div>
-            <strong>SAKSHAM AICTE Portal</strong> • Approval Process Handbook (APH 2024–27 Compliance Subsystem)
+            <strong>PRAVAH AICTE Portal</strong> • Approval Process Handbook (APH 2024–27 Compliance Subsystem)
           </div>
           <div className="text-[11px] text-slate-600">
             Intelligent Scrutiny • Automated Workflows • Transparent Compliance

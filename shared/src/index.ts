@@ -135,6 +135,7 @@ export interface Application {
   requestedIntake: number;
   academicCycle?: string;
   isDraft?: boolean;
+  isDemo?: boolean;
   draftData?: Record<string, unknown> | null;
   institutionId?: string | null;
   documents?: ApplicationDocument[];
@@ -158,6 +159,13 @@ export interface ApplicationDocument {
   uploadedById: string;
   verificationStatus: string;
   remarks?: string | null;
+  detectedDocumentType?: DocumentType | null;
+  extractedFields?: Record<string, string | null> | null;
+  validationResults?: Array<{ rule: string; passed: boolean; explanation: string }> | null;
+  verificationExplanation?: string | null;
+  ocrConfidence?: number | null;
+  ocrMethod?: string | null;
+  ocrEvidence?: Array<{ page: number; excerpt: string; confidence: number | null }> | null;
   createdAt: string;
   updatedAt: string;
 }

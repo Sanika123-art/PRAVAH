@@ -134,7 +134,7 @@ export const EVCManagementPage: React.FC = () => {
 
       {/* Main Content Area */}
       {loading ? (
-        <LoadingState message="Querying live EVC records from SAKSHAM PostgreSQL service..." />
+        <LoadingState message="Querying live EVC records from PRAVAH PostgreSQL service..." />
       ) : error ? (
         <ErrorState message={error} onRetry={loadEVCData} />
       ) : filteredInspections.length === 0 ? (

@@ -56,7 +56,7 @@ export const ResetPasswordPage: React.FC = () => {
             <GeometricMark size={48} />
           </div>
           <h1 className="text-2xl font-black text-gov-navy-950 tracking-tight">
-            SAKSHAM
+            PRAVAH
           </h1>
           <p className="text-xs font-bold text-gov-navy-800 uppercase tracking-widest">
             Set New Account Password
@@ -73,7 +73,7 @@ export const ResetPasswordPage: React.FC = () => {
                 Password Reset Successful!
               </h2>
               <p className="text-xs text-slate-600">
-                Your new Argon2id hashed password has been committed to the SAKSHAM authoritative directory.
+                Your new Argon2id hashed password has been committed to the PRAVAH authoritative directory.
               </p>
               <div className="pt-2">
                 <Link
@@ -180,7 +180,7 @@ export const ResetPasswordPage: React.FC = () => {
       </div>
 
       <footer className="py-4 text-center text-xs text-slate-500">
-        AICTE SAKSHAM Identity Verification Service
+        AICTE PRAVAH Identity Verification Service
       </footer>
     </div>
   );

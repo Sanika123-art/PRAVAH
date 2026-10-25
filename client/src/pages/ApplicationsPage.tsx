@@ -24,6 +24,7 @@ export const ApplicationsPage: React.FC = () => {
   const [selectedRegion, setSelectedRegion] = useState<string>('ALL');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [selectedPriority, setSelectedPriority] = useState<string>('ALL');
+  const [recordType, setRecordType] = useState<'ALL' | 'REAL' | 'DEMO'>('ALL');
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
 
   const [applications, setApplications] = useState<Application[]>([]);
@@ -41,6 +42,7 @@ export const ApplicationsPage: React.FC = () => {
         region: selectedRegion,
         category: selectedCategory,
         priority: selectedPriority,
+        recordType,
       });
       setApplications(response.data);
       setTotalCount(response.total);
@@ -49,7 +51,7 @@ export const ApplicationsPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, selectedStage, selectedRegion, selectedCategory, selectedPriority]);
+  }, [searchQuery, selectedStage, selectedRegion, selectedCategory, selectedPriority, recordType]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -64,6 +66,7 @@ export const ApplicationsPage: React.FC = () => {
     setSelectedRegion('ALL');
     setSelectedCategory('ALL');
     setSelectedPriority('ALL');
+    setRecordType('ALL');
   };
 
   const handleExportCsv = () => {
@@ -85,7 +88,7 @@ export const ApplicationsPage: React.FC = () => {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `SAKSHAM_Applications_Export_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute('download', `PRAVAH_Applications_Export_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -130,7 +133,7 @@ export const ApplicationsPage: React.FC = () => {
         </div>
 
         {/* Dropdown Filters */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-slate-100 text-xs">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-2 border-t border-slate-100 text-xs">
           <div>
             <label className="block text-[11px] font-semibold text-slate-500 mb-1">Approval Stage</label>
             <select
@@ -203,13 +206,21 @@ export const ApplicationsPage: React.FC = () => {
               <option value="CRITICAL_OVERDUE">Critical / SLA Overdue</option>
             </select>
           </div>
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-500 mb-1">Record source</label>
+            <select value={recordType} onChange={(event) => setRecordType(event.target.value as 'ALL' | 'REAL' | 'DEMO')} className="w-full border border-slate-300 rounded py-1 px-2 text-xs">
+              <option value="ALL">Real and demo</option>
+              <option value="REAL">Real submissions</option>
+              <option value="DEMO">Read-only demo records</option>
+            </select>
+          </div>
         </div>
       </div>
 
       {/* Main Table Card */}
       <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
         {loading ? (
-          <LoadingState message="Fetching live records from SAKSHAM PostgreSQL service..." />
+          <LoadingState message="Fetching live records from PRAVAH PostgreSQL service..." />
         ) : error ? (
           <ErrorState message={error} onRetry={loadData} />
         ) : applications.length === 0 ? (
@@ -242,6 +253,7 @@ export const ApplicationsPage: React.FC = () => {
                     <td>
                       <div className="font-bold text-xs text-slate-900 max-w-[280px] truncate" title={app.instituteName}>
                         {app.instituteName}
+                        {app.isDemo && <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-900">DEMO</span>}
                       </div>
                       <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5">
                         <span>{app.state}</span>

@@ -6,6 +6,10 @@ import {
   releaseDeficiency,
   reviewDeficiency,
   transitionStage,
+  getScrutiny,
+  analyzeScrutiny,
+  reviewScrutiny,
+  decideScrutiny,
 } from '../controllers/applicationController';
 import { requireAuth, requireOfficer, requireRegionalAccess, requireRole } from '../middleware/authMiddleware';
 import { UserRole } from '@prisma/client';
@@ -15,6 +19,31 @@ const router = Router();
 // Internal Officer Application Endpoints
 router.get('/', requireAuth, requireOfficer, requireRegionalAccess, getApplications);
 router.get('/:id', requireAuth, requireOfficer, getApplicationById);
+
+router.get(
+  '/:id/scrutiny',
+  requireAuth,
+  requireRole(UserRole.SCRUTINY_OFFICER, UserRole.REGIONAL_OFFICER, UserRole.MEMBER_SECRETARY, UserRole.SYSTEM_ADMIN),
+  getScrutiny
+);
+router.post(
+  '/:id/scrutiny/analyze',
+  requireAuth,
+  requireRole(UserRole.SCRUTINY_OFFICER, UserRole.REGIONAL_OFFICER, UserRole.MEMBER_SECRETARY, UserRole.SYSTEM_ADMIN),
+  analyzeScrutiny
+);
+router.patch(
+  '/:id/scrutiny/findings/:findingId',
+  requireAuth,
+  requireRole(UserRole.SCRUTINY_OFFICER, UserRole.REGIONAL_OFFICER, UserRole.MEMBER_SECRETARY, UserRole.SYSTEM_ADMIN),
+  reviewScrutiny
+);
+router.post(
+  '/:id/scrutiny/decision',
+  requireAuth,
+  requireRole(UserRole.SCRUTINY_OFFICER, UserRole.REGIONAL_OFFICER, UserRole.MEMBER_SECRETARY, UserRole.SYSTEM_ADMIN),
+  decideScrutiny
+);
 
 // Deficiency Notice Management (Scrutiny Officers & Committee)
 router.post(

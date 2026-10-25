@@ -107,7 +107,7 @@ export async function apiGet<T>(
     }
 
     throw new ApiError(
-      error.message || 'Network request failed. Ensure SAKSHAM API service is running on port 5000.',
+      error.message || 'Network request failed. Ensure PRAVAH API service is running on port 5000.',
       0
     );
   }
@@ -186,7 +186,7 @@ export async function apiMutate<T>(
     }
 
     throw new ApiError(
-      error.message || 'Network request failed. Ensure SAKSHAM API service is running on port 5000.',
+      error.message || 'Network request failed. Ensure PRAVAH API service is running on port 5000.',
       0
     );
   }
@@ -263,4 +263,3 @@ export async function apiUpload<T>(
     throw new ApiError(error.message || 'Upload failed.', 0);
   }
 }
-

@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import multer from 'multer';
-import { Request } from 'express';
+import { NextFunction, Request, Response } from 'express';
 
 const UPLOADS_DIR = path.resolve(__dirname, '../../uploads');
 
@@ -27,8 +27,6 @@ const ALLOWED_MIME_TYPES = [
   'application/pdf',
   'image/jpeg',
   'image/png',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 ];
 
 const fileFilter = (
@@ -39,7 +37,7 @@ const fileFilter = (
   if (ALLOWED_MIME_TYPES.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error(`Invalid file format '${file.mimetype}'. Only PDF, JPEG, and PNG documents are accepted.`));
+    cb(null, false);
   }
 };
 
@@ -51,6 +49,23 @@ export const documentUpload = multer({
   },
   fileFilter,
 });
+
+const singleDocumentUpload = documentUpload.single('file');
+
+export const uploadDocumentFile = (req: Request, res: Response, next: NextFunction): void => {
+  singleDocumentUpload(req, res, (error: unknown) => {
+    if (error instanceof multer.MulterError) {
+      const statusCode = error.code === 'LIMIT_FILE_SIZE' ? 413 : 400;
+      next(Object.assign(new Error(error.message), { statusCode }));
+      return;
+    }
+    if (error) {
+      next(error);
+      return;
+    }
+    next();
+  });
+};
 
 /**
  * Computes SHA-256 hash of a file on disk

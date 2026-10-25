@@ -1,392 +1,300 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Application } from '@saksham/shared';
-import { CouncilEmblem, IndiaFlag } from '../common/GovtEmblem';
 import {
-  X,
-  CheckCircle2,
-  AlertTriangle,
-  FileCheck,
-  Printer,
-  ShieldCheck,
-  Building,
-  UserCheck,
-  Send,
-  FileWarning,
-} from 'lucide-react';
-
-interface ChecklistItem {
-  id: string;
-  category: string;
-  parameterName: string;
-  aphClause: string;
-  mandatory: boolean;
-  status: 'COMPLIANT' | 'DEFICIENT';
-  remark: string;
-}
-
-const DEFAULT_CHECKLIST: ChecklistItem[] = [
-  {
-    id: 'chk-1',
-    category: 'Land & Title',
-    parameterName: 'Registered Sale Deed / Government Lease (Tenure >= 30 Years)',
-    aphClause: 'APH 2024–27 Chapter I, Section 1.3(a)',
-    mandatory: true,
-    status: 'COMPLIANT',
-    remark: 'Verified Sub-Registrar registered deed. Clear unencumbered title on single plot.',
-  },
-  {
-    id: 'chk-2',
-    category: 'Infrastructure',
-    parameterName: 'Approved Building Plan with Barrier-Free Ramps & Lift Access',
-    aphClause: 'APH 2024–27 Chapter I, Section 1.3(c) & NBC 2016',
-    mandatory: true,
-    status: 'COMPLIANT',
-    remark: 'Municipal approved blueprint inspected. Dedicated ramps at entry and lift operational.',
-  },
-  {
-    id: 'chk-3',
-    category: 'Safety & Municipal',
-    parameterName: 'Valid Permanent Fire Safety Certificate (Fire NOC)',
-    aphClause: 'APH 2024–27 Chapter I, Section 1.3(f)',
-    mandatory: true,
-    status: 'COMPLIANT',
-    remark: 'Valid Chief Fire Officer certificate verified. Expiry beyond current academic year.',
-  },
-  {
-    id: 'chk-4',
-    category: 'Academic Faculty',
-    parameterName: 'Student-Teacher Ratio (1:15/1:20) & Cadre Ratio (1:2:6)',
-    aphClause: 'APH 2024–27 Chapter II, Section 2.4',
-    mandatory: true,
-    status: 'DEFICIENT',
-    remark: 'Shortfall of 3 regular Professors and 4 Associate Professors in Computer Science cadre.',
-  },
-  {
-    id: 'chk-5',
-    category: 'Financial Reserves',
-    parameterName: 'Joint Lien FDR / Endowment Deposit in Nationalized Bank',
-    aphClause: 'APH 2024–27 Chapter I, Section 1.4',
-    mandatory: true,
-    status: 'COMPLIANT',
-    remark: 'Fixed Deposit Receipt in joint lien with AICTE Member Secretary verified in SBI.',
-  },
-];
+  analyzeApplicationScrutiny,
+  fetchScrutinyWorkbench,
+  reviewApplicationFinding,
+  saveApplicationDecision,
+  ScrutinyComparison,
+  ScrutinyFinding,
+  ScrutinyWorkbench,
+} from '../../services/applicationService';
+import { useAuth } from '../../context/AuthContext';
+import { AlertTriangle, CheckCircle2, ExternalLink, FileCheck, Clock, RotateCcw, ShieldAlert, X } from 'lucide-react';
 
 interface ScrutinyEvaluationModalProps {
   application: Application | null;
   onClose: () => void;
+  onDecisionSaved?: () => void;
 }
 
-export const ScrutinyEvaluationModal: React.FC<ScrutinyEvaluationModalProps> = ({
-  application,
-  onClose,
-}) => {
+const severityStyles: Record<ScrutinyFinding['severity'], string> = {
+  CRITICAL: 'border-rose-300 bg-rose-50 text-rose-900',
+  HIGH: 'border-orange-300 bg-orange-50 text-orange-900',
+  MEDIUM: 'border-amber-300 bg-amber-50 text-amber-900',
+  LOW: 'border-slate-300 bg-slate-50 text-slate-700',
+};
+
+const findingStateLabel: Record<ScrutinyFinding['reviewState'], string> = {
+  PENDING: 'Pending',
+  CONFIRMED: 'Confirmed',
+  DISMISSED: 'Dismissed',
+  RESOLVED: 'Resolved',
+};
+
+const fileUrl = (applicationId: string, documentId: string) =>
+  `/api/institution/applications/${encodeURIComponent(applicationId)}/documents/${encodeURIComponent(documentId)}/file`;
+
+export const ScrutinyEvaluationModal: React.FC<ScrutinyEvaluationModalProps> = ({ application, onClose, onDecisionSaved }) => {
+  const { currentUser } = useAuth();
+  const [workbench, setWorkbench] = useState<ScrutinyWorkbench | null>(null);
+  const [selectedFinding, setSelectedFinding] = useState<ScrutinyFinding | null>(null);
+  const [reviewNote, setReviewNote] = useState('');
+  const [remarks, setRemarks] = useState('');
+  const [decision, setDecision] = useState<'APPROVE' | 'REQUEST_CORRECTION' | 'REJECT'>('APPROVE');
+  const [affectedFindingIds, setAffectedFindingIds] = useState<string[]>([]);
+  const [overrideFindingIds, setOverrideFindingIds] = useState<string[]>([]);
+  const [overrideReason, setOverrideReason] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  const refreshWorkbench = async () => {
+    if (!application) return;
+    const data = await fetchScrutinyWorkbench(application.id);
+    setWorkbench(data);
+    const currentFindings = data.latestRun?.findings || [];
+    setAffectedFindingIds((previous) => previous.filter((id) => currentFindings.some((finding) => finding.id === id)));
+    setOverrideFindingIds((previous) => previous.filter((id) => currentFindings.some((finding) => finding.id === id)));
+    if (selectedFinding) {
+      setSelectedFinding(currentFindings.find((finding) => finding.id === selectedFinding.id) || null);
+    }
+  };
+
+  useEffect(() => {
+    setWorkbench(null);
+    setError(null);
+    setSuccess(null);
+    setSelectedFinding(null);
+    if (application) {
+      let cancelled = false;
+      const loadWorkbench = async () => {
+        setBusy(true);
+        try {
+          let data = await fetchScrutinyWorkbench(application.id);
+          if (!data.latestRun && !application.isDemo) {
+            await analyzeApplicationScrutiny(application.id);
+            data = await fetchScrutinyWorkbench(application.id);
+          }
+          if (!cancelled) setWorkbench(data);
+        } catch (cause) {
+          if (!cancelled) setError(cause instanceof Error ? cause.message : 'Could not load the scrutiny workbench.');
+        } finally {
+          if (!cancelled) setBusy(false);
+        }
+      };
+      void loadWorkbench();
+      return () => {
+        cancelled = true;
+      };
+    }
+  }, [application?.id]);
+
   if (!application) return null;
 
-  const [checklist, setChecklist] = useState<ChecklistItem[]>(DEFAULT_CHECKLIST);
-  const [showLetterPreview, setShowLetterPreview] = useState(false);
-  const [actionFeedback, setActionFeedback] = useState<string | null>(null);
-  const [officerNotes, setOfficerNotes] = useState(
-    'Scrutiny evaluation completed per AICTE APH 2024–27 guidelines. Deficiency noted in faculty cadre.'
-  );
+  const findings = workbench?.latestRun?.findings || [];
+  const unresolved = findings.filter((finding) => ['PENDING', 'CONFIRMED'].includes(finding.reviewState));
+  const blocking = unresolved.filter((finding) => finding.severity !== 'LOW');
+  const canOverride = currentUser?.role === 'SYSTEM_ADMIN';
+  const documents = workbench?.application.documents || [];
 
-  const toggleStatus = (id: string) => {
-    setChecklist((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? { ...item, status: item.status === 'COMPLIANT' ? 'DEFICIENT' : 'COMPLIANT' }
-          : item
-      )
-    );
+  const runAnalysis = async () => {
+    setBusy(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      await analyzeApplicationScrutiny(application.id);
+      await refreshWorkbench();
+      setSuccess('A new OCR/rule scrutiny run was saved. Earlier runs remain available in the history.');
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Unable to analyze this application.');
+    } finally {
+      setBusy(false);
+    }
   };
 
-  const updateRemark = (id: string, remark: string) => {
-    setChecklist((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, remark } : item))
-    );
+  const saveFindingReview = async (reviewState: ScrutinyFinding['reviewState']) => {
+    if (!selectedFinding || reviewNote.trim().length < 5) {
+      setError('Add an officer note of at least 5 characters before updating the finding.');
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      await reviewApplicationFinding(application.id, selectedFinding.id, reviewState, reviewNote.trim());
+      await refreshWorkbench();
+      setReviewNote('');
+      setSuccess(`Finding marked ${findingStateLabel[reviewState].toLowerCase()}.`);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Unable to save the finding review.');
+    } finally {
+      setBusy(false);
+    }
   };
 
-  const compliantCount = checklist.filter((i) => i.status === 'COMPLIANT').length;
-  const deficientCount = checklist.filter((i) => i.status === 'DEFICIENT').length;
+  const saveDecision = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setBusy(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const result = await saveApplicationDecision(application.id, {
+        decision,
+        remarks: remarks.trim(),
+        affectedFindingIds,
+        overrideFindingIds,
+        overrideReason: overrideFindingIds.length ? overrideReason.trim() : undefined,
+      });
+      setSuccess(`Decision saved. Application advanced to ${result.data.resultingStage.replace(/_/g, ' ')}.`);
+      await refreshWorkbench();
+      onDecisionSaved?.();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Unable to save the decision.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const toggleId = (ids: string[], setIds: (value: string[]) => void, id: string) =>
+    setIds(ids.includes(id) ? ids.filter((item) => item !== id) : [...ids, id]);
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[92vh] flex flex-col border border-slate-200 animate-in fade-in zoom-in-95 duration-150">
-        {/* Modal Header */}
-        <div className="bg-[#0A1B38] text-white p-5 rounded-t-xl flex items-start justify-between border-b border-gov-navy-800">
-          <div className="space-y-1">
-            <div className="flex items-center space-x-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-amber-400">
-                Official Scrutiny Checklist Evaluation
-              </span>
-              <span className="text-slate-400">|</span>
-              <span className="font-mono text-xs text-slate-300">{application.applicationNumber}</span>
+    <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6">
+      <section role="dialog" aria-modal="true" aria-labelledby="scrutiny-title" className="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[94vh] flex flex-col border border-slate-200">
+        <header className="bg-[#0A1B38] text-white p-5 flex items-start justify-between rounded-t-xl">
+          <div>
+            <div className="flex gap-2 items-center text-[11px] uppercase tracking-wider font-bold text-amber-300">
+              <FileCheck className="w-4 h-4" /> Officer Scrutiny Workbench
+              {application.isDemo && <span className="rounded bg-amber-200 px-2 py-0.5 text-amber-950">DEMO · READ ONLY</span>}
             </div>
-            <h2 className="text-lg font-extrabold text-white">{application.instituteName}</h2>
-            <p className="text-xs text-slate-300">
-              PID: <span className="font-mono font-semibold">{application.permanentInstituteId}</span> • Region: {application.region} • Category: {application.category.replace(/_/g, ' ')}
-            </p>
+            <h2 id="scrutiny-title" className="mt-1 text-lg font-extrabold">{application.instituteName}</h2>
+            <p className="text-xs text-slate-300 font-mono">{application.applicationNumber} · PID {application.permanentInstituteId} · {application.region.replace(/_/g, ' ')}</p>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-gov-navy-800"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+          <button onClick={onClose} aria-label="Close scrutiny workbench" className="p-1 text-slate-300 hover:text-white"><X className="w-5 h-5" /></button>
+        </header>
 
-        {/* Modal Body */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 text-xs">
-          {/* Summary Strip */}
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
-              <span className="text-slate-500 font-semibold block text-[11px]">Total Parameters</span>
-              <span className="text-xl font-bold text-slate-900">{checklist.length} Norms</span>
-            </div>
-            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
-              <span className="text-emerald-700 font-semibold block text-[11px]">Compliant Norms</span>
-              <span className="text-xl font-bold text-emerald-800">{compliantCount} Cleared</span>
-            </div>
-            <div className="bg-rose-50 border border-rose-200 rounded-lg p-3">
-              <span className="text-rose-700 font-semibold block text-[11px]">Deficiencies Flagged</span>
-              <span className="text-xl font-bold text-rose-800">{deficientCount} Shortfalls</span>
-            </div>
-          </div>
-
-          {/* Checklist Items */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-1.5">
-              Statutory Evaluation Checklist (APH 2024–27 Chapter I & II)
-            </h4>
-
-            {checklist.map((item, index) => {
-              const isCompliant = item.status === 'COMPLIANT';
-
-              return (
-                <div
-                  key={item.id}
-                  className={`p-3.5 rounded-lg border transition-all ${
-                    isCompliant ? 'bg-slate-50/70 border-slate-200' : 'bg-rose-50/60 border-rose-300'
-                  }`}
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-                    <div>
-                      <div className="flex items-center space-x-2">
-                        <span className="font-mono text-[10px] font-bold px-1.5 py-0.2 rounded bg-slate-200 text-slate-700">
-                          Norm {index + 1}
-                        </span>
-                        <span className="text-[10px] font-semibold text-slate-500">[{item.category}]</span>
-                        <span className="font-mono text-[10px] text-gov-navy-800">{item.aphClause}</span>
-                      </div>
-                      <p className="font-bold text-slate-900 text-xs mt-0.5">{item.parameterName}</p>
-                    </div>
-
-                    {/* Toggle Button */}
-                    <div className="flex items-center space-x-2 flex-shrink-0">
-                      <button
-                        onClick={() => toggleStatus(item.id)}
-                        className={`px-3 py-1 rounded text-xs font-bold flex items-center gap-1 transition ${
-                          isCompliant
-                            ? 'bg-emerald-600 text-white shadow-sm'
-                            : 'bg-rose-600 text-white shadow-sm'
-                        }`}
-                      >
-                        {isCompliant ? (
-                          <>
-                            <CheckCircle2 className="w-3.5 h-3.5" /> Compliant
-                          </>
-                        ) : (
-                          <>
-                            <AlertTriangle className="w-3.5 h-3.5" /> Deficient
-                          </>
-                        )}
-                      </button>
-                    </div>
+        <main className="flex-1 overflow-y-auto p-5 space-y-5 text-xs">
+          {error && <div role="alert" className="rounded border border-rose-200 bg-rose-50 p-3 text-rose-800">{error}</div>}
+          {success && <div className="rounded border border-emerald-200 bg-emerald-50 p-3 text-emerald-800">{success}</div>}
+          {!workbench && !error ? <div className="p-10 text-center text-slate-500"><Clock className="w-5 h-5 animate-spin inline mr-2" />Loading actual application data...</div> : null}
+          {workbench && (
+            <>
+              <section className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                {[
+                  ['Trust / Society', application.trustName],
+                  ['Approval category', application.category.replace(/_/g, ' ')],
+                  ['Sector / type', application.institutionType.replace(/_/g, ' ')],
+                  ['Regional office / state', `${application.region.replace(/_/g, ' ')} · ${application.state}`],
+                  ['Campus land', `${application.landAreaAcres} acres`],
+                  ['Current stage', application.currentStage.replace(/_/g, ' ')],
+                  ['Stage / application age', `${application.stageAgeingDays} / ${application.totalAgeingDays} days`],
+                  ['Submitted', new Date(application.submissionDate).toLocaleDateString()],
+                ].map(([label, value]) => (
+                  <div key={label} className="p-3 rounded border border-slate-200 bg-slate-50">
+                    <div className="text-[10px] uppercase text-slate-500">{label}</div><div className="mt-1 font-bold text-slate-900">{value || 'Not recorded'}</div>
                   </div>
+                ))}
+              </section>
 
-                  {/* Observation Input */}
-                  <input
-                    type="text"
-                    value={item.remark}
-                    onChange={(e) => updateRemark(item.id, e.target.value)}
-                    placeholder="Enter scrutiny observation or deficiency notes..."
-                    className="w-full text-[11px] border border-slate-300 rounded px-2.5 py-1.5 bg-white text-slate-800 focus:outline-none focus:ring-1 focus:ring-gov-navy-700"
-                  />
+              <section className="rounded-lg border border-slate-200 overflow-hidden">
+                <div className="p-3 bg-slate-50 border-b flex items-center justify-between">
+                  <div><h3 className="font-bold text-slate-900">Application documents ({documents.length})</h3><p className="text-[10px] text-slate-500">OCR and deterministic rules assist review; they do not establish authenticity.</p></div>
+                  <button disabled={busy || application.isDemo} onClick={runAnalysis} className="inline-flex gap-1.5 items-center px-3 py-1.5 rounded bg-gov-navy-900 text-white font-bold disabled:opacity-50">
+                    {busy ? <Clock className="w-3.5 h-3.5 animate-spin" /> : <RotateCcw className="w-3.5 h-3.5" />} Analyze / re-run
+                  </button>
                 </div>
-              );
-            })}
-          </div>
+                {documents.length === 0 ? <p className="p-4 text-slate-500">No documents are uploaded.</p> : (
+                  <div className="divide-y divide-slate-100">
+                    {documents.map((doc) => (
+                      <div key={doc.id} className="p-3 flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                          <div className="font-bold text-slate-900">{doc.title} <span className="font-mono text-[10px] text-slate-500">· {doc.documentType.replace(/_/g, ' ')}</span></div>
+                          <div className="mt-1 text-[10px] text-slate-500">OCR: {doc.ocrMethod || 'Not recorded'} · confidence: {doc.ocrConfidence === null || doc.ocrConfidence === undefined ? 'Unavailable' : `${doc.ocrConfidence.toFixed(1)}%`} · rule result: <strong>{doc.verificationStatus}</strong>{doc.detectedDocumentType ? ` · detected ${doc.detectedDocumentType.replace(/_/g, ' ')}` : ''}</div>
+                          {doc.verificationExplanation && <p className="mt-1 text-[10px] text-slate-600">{doc.verificationExplanation}</p>}
+                        </div>
+                        <a href={fileUrl(application.id, doc.id)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded border border-slate-300 px-2.5 py-1.5 font-semibold hover:bg-slate-50"><ExternalLink className="w-3.5 h-3.5" /> Open original</a>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
 
-          {/* Committee Recommendation Notes */}
-          <div className="space-y-1.5">
-            <label className="font-bold text-slate-800 block text-xs">
-              Scrutiny Committee Final Recommendation Remarks
-            </label>
-            <textarea
-              rows={2}
-              value={officerNotes}
-              onChange={(e) => setOfficerNotes(e.target.value)}
-              className="w-full text-xs border border-slate-300 rounded-lg p-2.5 focus:ring-1 focus:ring-gov-navy-700"
-            />
-          </div>
-        </div>
-
-        {/* Modal Actions */}
-        <div className="p-4 bg-slate-50 border-t border-slate-200 rounded-b-xl space-y-3">
-          {actionFeedback && (
-            <div className="p-2.5 bg-blue-50 border border-blue-200 rounded-md text-xs text-blue-900 flex items-center justify-between">
-              <span>{actionFeedback}</span>
-              <button
-                onClick={() => setActionFeedback(null)}
-                className="text-[11px] font-bold text-blue-700 hover:underline ml-2"
-              >
-                Dismiss
-              </button>
-            </div>
-          )}
-
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <button
-              onClick={() => setShowLetterPreview(true)}
-              className="px-3.5 py-2 bg-white border border-slate-300 hover:bg-slate-100 rounded text-xs font-bold text-slate-800 flex items-center gap-1.5 shadow-sm"
-            >
-              <Printer className="w-3.5 h-3.5 text-gov-navy-800" />
-              <span>Generate Official Deficiency Letter (PDF)</span>
-            </button>
-
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={onClose}
-                className="px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-100 rounded text-xs font-bold"
-              >
-                Cancel
-              </button>
-              {deficientCount === 0 ? (
-                <button
-                  onClick={() => {
-                    setActionFeedback(
-                      `[Read-Only Stage]: Scrutiny passed for ${application.applicationNumber}. Stage transition to EVC is preserved for Phase 3 mutation engine.`
-                    );
-                  }}
-                  className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded text-xs font-bold shadow flex items-center gap-1.5"
-                >
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Recommend for EVC Committee</span>
-                </button>
-              ) : (
-                <button
-                  onClick={() => {
-                    setActionFeedback(
-                      `[Read-Only Stage]: Deficiency notice formulated (${deficientCount} deficiencies). Formal dispatch and Re-Scrutiny transition will be committed in Phase 3.`
-                    );
-                  }}
-                  className="px-4 py-2 bg-rose-700 hover:bg-rose-800 text-white rounded text-xs font-bold shadow flex items-center gap-1.5"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                  <span>Issue Formal Rectification Notice ({deficientCount} Deficiencies)</span>
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Official AICTE Letterhead Preview Sub-Modal */}
-        {showLetterPreview && (
-          <div className="fixed inset-0 z-60 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full p-8 border border-slate-300 space-y-5 animate-in zoom-in-95 duration-150 relative">
-              {/* Official AICTE Header */}
-              <div className="text-center border-b-2 border-slate-800 pb-4 relative">
-                <div className="flex justify-center mb-1">
-                  <CouncilEmblem size={48} />
-                </div>
-                <p className="text-[10px] font-bold text-[#8B1A10]">अखिल भारतीय तकनीकी शिक्षा परिषद</p>
-                <h3 className="text-sm font-extrabold text-gov-navy-950">
-                  ALL INDIA COUNCIL FOR TECHNICAL EDUCATION
-                </h3>
-                <p className="text-[10px] text-slate-500">
-                  (A Statutory Body of the Government of India) • Nelson Mandela Marg, Vasant Kunj, New Delhi - 110070
-                </p>
-              </div>
-
-              {/* Letter Reference & Date */}
-              <div className="flex justify-between text-[11px] font-mono text-slate-700">
-                <span>Ref: AICTE/DEF/{application.applicationNumber.replace(/\//g, '-')}/2026</span>
-                <span>Date: 23 October 2026</span>
-              </div>
-
-              {/* Addressee */}
-              <div className="text-xs space-y-0.5 text-slate-800">
-                <p className="font-bold">To,</p>
-                <p className="font-semibold">{application.trustName}</p>
-                <p>{application.instituteName}</p>
-                <p>Permanent Institute ID: {application.permanentInstituteId}</p>
-              </div>
-
-              {/* Subject */}
-              <div className="bg-slate-50 p-2.5 rounded border border-slate-200 text-xs">
-                <span className="font-bold text-gov-navy-950">Subject: </span>
-                <span className="font-semibold text-slate-800">
-                  Deficiency Scrutiny Report for AICTE Approval Process 2026–2027 — Notice for Rectification.
-                </span>
-              </div>
-
-              {/* Deficiencies Table */}
-              <div className="space-y-2 text-xs">
-                <p className="text-slate-700 leading-relaxed text-[11px]">
-                  Sir / Madam, with reference to your online application for the academic year 2026–2027, the Regional Scrutiny Committee has recorded the following compliance deficiencies under the Approval Process Handbook (APH 2024–27):
-                </p>
-
-                <table className="w-full border-collapse border border-slate-300 text-[11px]">
-                  <thead className="bg-slate-100">
-                    <tr>
-                      <th className="border border-slate-300 p-1.5 text-left font-bold">Norm / Parameter</th>
-                      <th className="border border-slate-300 p-1.5 text-left font-bold">Status</th>
-                      <th className="border border-slate-300 p-1.5 text-left font-bold">Observation</th>
+              <section className="rounded-lg border border-slate-200 overflow-hidden">
+                <div className="p-3 bg-slate-50 border-b"><h3 className="font-bold text-slate-900">Field comparisons</h3><p className="text-[10px] text-slate-500">Unextracted values are unknown, not assumed to be absent. Fuzzy differences never auto-pass.</p></div>
+                {workbench.comparisons.length ? <div className="overflow-x-auto"><table className="w-full min-w-[700px] text-left">
+                  <thead className="bg-white text-[10px] uppercase text-slate-500"><tr><th className="p-2">Document / field</th><th className="p-2">Application value</th><th className="p-2">OCR value</th><th className="p-2">Comparison</th></tr></thead>
+                  <tbody>{workbench.comparisons.map((comparison: ScrutinyComparison) => (
+                    <tr key={`${comparison.documentId}-${comparison.fieldName}`} className="border-t border-slate-100 align-top">
+                      <td className="p-2"><div className="font-semibold">{comparison.label}</div><div className="text-[10px] text-slate-500">{comparison.documentType.replace(/_/g, ' ')}</div></td>
+                      <td className="p-2">{comparison.applicationValue || 'Not provided'}</td><td className="p-2">{comparison.documentValue || 'Not extracted'}</td>
+                      <td className="p-2"><span className={`font-bold ${comparison.result.includes('MATCH') ? 'text-emerald-700' : comparison.result === 'CONFLICT' ? 'text-rose-700' : comparison.result === 'NOT_EXTRACTED' ? 'text-amber-700' : 'text-slate-600'}`}>{comparison.result.replace(/_/g, ' ')}</span><div className="mt-0.5 text-[10px] text-slate-600">{comparison.explanation}</div></td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {checklist
-                      .filter((i) => i.status === 'DEFICIENT')
-                      .map((def) => (
-                        <tr key={def.id}>
-                          <td className="border border-slate-300 p-1.5 font-medium">{def.parameterName}</td>
-                          <td className="border border-slate-300 p-1.5 text-rose-700 font-bold">DEFICIENT</td>
-                          <td className="border border-slate-300 p-1.5 text-slate-600">{def.remark}</td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
-              </div>
+                  ))}</tbody>
+                </table></div> : <p className="p-4 text-slate-500">No configured application fields could be compared yet.</p>}
+              </section>
 
-              {/* Directive */}
-              <p className="text-[11px] text-slate-700 leading-relaxed border-t border-slate-200 pt-3">
-                You are hereby granted <strong>10 statutory calendar days</strong> to upload authenticated rectifications through the SAKSHAM institution compliance portal for Re-Scrutiny Committee appraisal.
-              </p>
-
-              {/* Digital Signature */}
-              <div className="flex justify-between items-end pt-4 text-xs">
-                <div className="text-[10px] text-slate-400">
-                  <span>Cryptographically Signed via SAKSHAM e-Gov Gateway</span>
+              <section className="space-y-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div><h3 className="font-bold text-slate-900">Current findings ({findings.length})</h3><p className="text-[10px] text-slate-500">Open a finding to inspect its evidence and record an officer review.</p></div>
+                  <span className="text-[10px] text-slate-600">Blocking unresolved: <strong>{blocking.length}</strong></span>
                 </div>
-                <div className="text-right">
-                  <div className="font-bold text-gov-navy-950">Regional Officer (RO)</div>
-                  <div className="text-[11px] text-slate-500">All India Council for Technical Education</div>
-                </div>
-              </div>
+                {!workbench.latestRun ? <p className="rounded border border-dashed border-slate-300 p-4 text-slate-600">No scrutiny run exists. Run OCR/rule analysis before recording a decision.</p> : findings.length === 0 ? <p className="rounded border border-emerald-200 bg-emerald-50 p-4 text-emerald-800">No automated discrepancies were generated. Officers must still complete their independent review.</p> : (
+                  <div className="space-y-2">{findings.map((finding) => (
+                    <button key={finding.id} type="button" onClick={() => { setSelectedFinding(finding); setReviewNote(finding.officerNotes || ''); setError(null); }} className={`w-full text-left rounded-lg border p-3 ${severityStyles[finding.severity]} ${selectedFinding?.id === finding.id ? 'ring-2 ring-blue-500' : ''}`}>
+                      <div className="flex flex-wrap justify-between gap-2"><strong>{finding.severity} · {finding.fieldName}</strong><span>{findingStateLabel[finding.reviewState]}</span></div>
+                      <div className="mt-1">{finding.reason}</div>
+                      {finding.applicationValue && <div className="mt-1 text-[10px]">Application: “{finding.applicationValue}” · Document: “{finding.documentValue || 'Not extracted'}”</div>}
+                    </button>
+                  ))}</div>
+                )}
+                {selectedFinding && (
+                  <div className="rounded-lg border border-blue-200 bg-blue-50/50 p-4 space-y-3">
+                    <div className="flex justify-between gap-2"><strong className="text-slate-900">Finding detail · {selectedFinding.findingType.replace(/_/g, ' ')}</strong><button onClick={() => setSelectedFinding(null)} aria-label="Close finding detail"><X className="w-4 h-4" /></button></div>
+                    {selectedFinding.documentId && <a href={fileUrl(application.id, selectedFinding.documentId)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-blue-800 underline"><ExternalLink className="w-3.5 h-3.5" /> Open associated original document {selectedFinding.evidencePage ? `(page ${selectedFinding.evidencePage})` : ''}</a>}
+                    {selectedFinding.evidence && <blockquote className="border-l-2 border-blue-400 bg-white p-2 text-slate-700"><div className="text-[10px] font-bold text-slate-500">OCR excerpt{selectedFinding.evidencePage ? ` · page ${selectedFinding.evidencePage}` : ''}{selectedFinding.ocrConfidence !== null ? ` · ${selectedFinding.ocrConfidence.toFixed(1)}% confidence` : ''}</div>{selectedFinding.evidence}</blockquote>}
+                    <div className="grid sm:grid-cols-2 gap-2"><div className="bg-white p-2 rounded border">Application value: <strong>{selectedFinding.applicationValue || 'Not applicable / unavailable'}</strong></div><div className="bg-white p-2 rounded border">Document value: <strong>{selectedFinding.documentValue || 'Not extracted'}</strong></div></div>
+                    <p className="text-slate-700">Recommended action: {selectedFinding.recommendedAction}</p>
+                    <label className="block font-semibold">Officer note (required, at least 5 characters)
+                      <textarea rows={2} value={reviewNote} onChange={(event) => setReviewNote(event.target.value)} className="mt-1 block w-full rounded border border-slate-300 bg-white p-2 font-normal" />
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      <button disabled={busy} onClick={() => saveFindingReview('CONFIRMED')} className="px-3 py-1.5 rounded bg-orange-700 text-white font-bold disabled:opacity-50">Confirm finding</button>
+                      <button disabled={busy} onClick={() => saveFindingReview('DISMISSED')} className="px-3 py-1.5 rounded bg-slate-700 text-white font-bold disabled:opacity-50">Dismiss as false positive</button>
+                      <button disabled={busy} onClick={() => saveFindingReview('RESOLVED')} className="px-3 py-1.5 rounded bg-emerald-700 text-white font-bold disabled:opacity-50">Mark resolved</button>
+                    </div>
+                    {selectedFinding.overrideReason && <p className="text-rose-800">Override by {selectedFinding.overrideByName} · {selectedFinding.overrideReason}</p>}
+                  </div>
+                )}
+              </section>
 
-              {/* Close Button */}
-              <div className="flex justify-end pt-2 border-t border-slate-200">
-                <button
-                  onClick={() => setShowLetterPreview(false)}
-                  className="px-4 py-1.5 bg-gov-navy-900 text-white rounded text-xs font-bold"
-                >
-                  Close Letter Preview
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+              <section className="rounded-lg border border-slate-200 p-4">
+                <h3 className="font-bold text-slate-900">Scrutiny history</h3>
+                {workbench.application.scrutinyRuns.length === 0 && workbench.application.officerDecisions.length === 0 ? <p className="mt-2 text-slate-500">No previous scrutiny or decision history.</p> : <div className="mt-2 space-y-2">
+                  {workbench.application.scrutinyRuns.map((run) => <div key={run.id} className="border-l-2 border-blue-400 pl-2"><strong>Analysis run</strong> · {new Date(run.createdAt).toLocaleString()} · {run.officerName} · {run.findings.length} findings</div>)}
+                  {workbench.application.officerDecisions.map((item) => <div key={item.id} className="border-l-2 border-emerald-400 pl-2"><strong>{item.decision.replace(/_/g, ' ')}</strong> · {new Date(item.createdAt).toLocaleString()} · {item.officerName} · {item.remarks}</div>)}
+                </div>}
+              </section>
+
+              <form onSubmit={saveDecision} className="rounded-lg border border-slate-300 p-4 space-y-3">
+                <h3 className="font-bold text-slate-900">Officer decision</h3>
+                {blocking.length > 0 && <div className="flex items-center gap-2 text-rose-800"><ShieldAlert className="w-4 h-4" /> Approval blocked by unresolved material findings. Resolve, dismiss with reason, or use a permitted admin override.</div>}
+                {(['APPROVE', 'REQUEST_CORRECTION', 'REJECT'] as const).map((choice) => (
+                  <label key={choice} className="mr-4 inline-flex items-center gap-1.5 font-semibold"><input type="radio" name="decision" checked={decision === choice} onChange={() => setDecision(choice)} disabled={application.isDemo} />{choice.replace(/_/g, ' ')}</label>
+                ))}
+                {decision !== 'APPROVE' && <div className="space-y-1"><div className="font-semibold">Select supporting findings / documents *</div>{findings.filter((finding) => finding.reviewState !== 'DISMISSED').map((finding) => <label key={finding.id} className="flex items-start gap-2 text-slate-700"><input type="checkbox" checked={affectedFindingIds.includes(finding.id)} onChange={() => toggleId(affectedFindingIds, setAffectedFindingIds, finding.id)} />{finding.severity} · {finding.fieldName} — {finding.reason}</label>)}</div>}
+                {canOverride && decision === 'APPROVE' && blocking.length > 0 && <div className="rounded bg-amber-50 p-3 space-y-2"><strong>System administrator blocking-finding override</strong>{blocking.map((finding) => <label key={finding.id} className="flex gap-2"><input type="checkbox" checked={overrideFindingIds.includes(finding.id)} onChange={() => toggleId(overrideFindingIds, setOverrideFindingIds, finding.id)} />Override {finding.severity}: {finding.fieldName}</label>)}{overrideFindingIds.length > 0 && <textarea required minLength={10} rows={2} value={overrideReason} onChange={(event) => setOverrideReason(event.target.value)} placeholder="Specific justification for each selected override (minimum 10 characters)" className="w-full rounded border border-amber-300 bg-white p-2" />}</div>}
+                <label className="block font-semibold">Final remarks * (minimum 10 characters)
+                  <textarea required minLength={10} maxLength={4000} rows={3} value={remarks} onChange={(event) => setRemarks(event.target.value)} className="mt-1 block w-full rounded border border-slate-300 p-2 font-normal" placeholder="Record the factual basis and relevant documents/findings for this decision." />
+                </label>
+                <div className="flex items-start gap-2 text-[10px] text-slate-500"><AlertTriangle className="w-3.5 h-3.5 mt-0.5" />An officer's decision is persisted separately from OCR. Approval advances to EVC scheduling; OCR does not approve the institution.</div>
+                <div className="flex justify-end">
+                  <button type="submit" disabled={busy || application.isDemo || !workbench.latestRun} className="inline-flex gap-1.5 items-center px-4 py-2 rounded bg-gov-navy-900 text-white font-bold disabled:opacity-50"><CheckCircle2 className="w-4 h-4" />Save officer decision</button>
+                </div>
+              </form>
+            </>
+          )}
+        </main>
+      </section>
     </div>
   );
 };

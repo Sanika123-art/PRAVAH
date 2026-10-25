@@ -31,6 +31,7 @@ import { DocumentValidityPage } from './pages/DocumentValidityPage';
 import { ReportsPage } from './pages/ReportsPage';
 import { AuditPage } from './pages/AuditPage';
 import { AdminRulesPage } from './pages/AdminRulesPage';
+import { LanguageProvider } from './context/LanguageContext';
 
 const RootRedirect: React.FC = () => {
   const { currentUser, isLoading } = useAuth();
@@ -44,9 +45,10 @@ const RootRedirect: React.FC = () => {
 
 export const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
+    <LanguageProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
           {/* Public Authentication Endpoints */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/institution/signup" element={<InstitutionSignupPage />} />
@@ -114,9 +116,10 @@ export const App: React.FC = () => {
 
           {/* Fallback Catch-all Route */}
           <Route path="*" element={<RootRedirect />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </LanguageProvider>
   );
 };
 

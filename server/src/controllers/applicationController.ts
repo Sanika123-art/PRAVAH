@@ -10,10 +10,97 @@ import {
   reviewDeficiencyResponse,
 } from '../services/deficiencyService';
 import { ApplicationStage, UserRole } from '@prisma/client';
+import { z } from 'zod';
+import {
+  analyzeApplicationScrutiny,
+  getScrutinyWorkbench,
+  recordOfficerDecision,
+  reviewScrutinyFinding,
+  ScrutinyWorkflowError,
+} from '../services/officerScrutinyService';
+import { OfficerDecisionType, ScrutinyReviewState } from '@prisma/client';
+
+const sendScrutinyError = (error: unknown, res: Response, next: NextFunction) => {
+  if (error instanceof ScrutinyWorkflowError) {
+    res.status(error.statusCode).json({ success: false, error: { message: error.message, statusCode: error.statusCode } });
+    return;
+  }
+  next(error);
+};
+
+export const getScrutiny = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const result = await getScrutinyWorkbench(req.params.id, req.user!.role as UserRole, req.user!.region || null);
+    res.status(200).json({ success: true, data: result });
+  } catch (error) {
+    sendScrutinyError(error, res, next);
+  }
+};
+
+export const analyzeScrutiny = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const result = await analyzeApplicationScrutiny(req.params.id, {
+      id: req.user!.id,
+      fullName: req.user!.fullName,
+      role: req.user!.role as UserRole,
+      region: req.user!.region || null,
+    });
+    res.status(201).json({ success: true, data: result });
+  } catch (error) {
+    sendScrutinyError(error, res, next);
+  }
+};
+
+export const reviewScrutiny = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const body = z.object({
+      reviewState: z.nativeEnum(ScrutinyReviewState),
+      note: z.string().trim().min(5).max(2000),
+    }).safeParse(req.body);
+    if (!body.success) {
+      res.status(400).json({ success: false, error: { message: 'A valid review state and a 5 to 2,000 character officer note are required.', statusCode: 400 } });
+      return;
+    }
+    const result = await reviewScrutinyFinding(req.params.id, req.params.findingId, body.data, {
+      id: req.user!.id,
+      fullName: req.user!.fullName,
+      role: req.user!.role as UserRole,
+      region: req.user!.region || null,
+    });
+    res.status(200).json({ success: true, data: result });
+  } catch (error) {
+    sendScrutinyError(error, res, next);
+  }
+};
+
+export const decideScrutiny = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const body = z.object({
+      decision: z.nativeEnum(OfficerDecisionType),
+      remarks: z.string().trim().min(10).max(4000),
+      affectedFindingIds: z.array(z.string().uuid()).max(100).optional(),
+      overrideFindingIds: z.array(z.string().uuid()).max(100).optional(),
+      overrideReason: z.string().trim().max(2000).optional(),
+    }).safeParse(req.body);
+    if (!body.success) {
+      res.status(400).json({ success: false, error: { message: 'Decision, meaningful remarks, and valid finding references are required.', statusCode: 400 } });
+      return;
+    }
+    const result = await recordOfficerDecision(req.params.id, body.data, {
+      id: req.user!.id,
+      fullName: req.user!.fullName,
+      role: req.user!.role as UserRole,
+      region: req.user!.region || null,
+    });
+    res.status(200).json({ success: true, data: result });
+  } catch (error) {
+    sendScrutinyError(error, res, next);
+  }
+};
 
 export const getApplications = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { search, stage, region, priority, category, limit, offset } = req.query;
+    const { search, stage, region, priority, category, limit, offset, recordType } = req.query;
 
     let effectiveRegion = typeof region === 'string' ? region : undefined;
 
@@ -38,6 +125,7 @@ export const getApplications = async (req: Request, res: Response, next: NextFun
       region: effectiveRegion,
       priority: typeof priority === 'string' ? priority : undefined,
       category: typeof category === 'string' ? category : undefined,
+      recordType: recordType === 'REAL' || recordType === 'DEMO' ? recordType : 'ALL',
       limit: limit ? parseInt(limit as string, 10) : undefined,
       offset: offset ? parseInt(offset as string, 10) : undefined,
     });

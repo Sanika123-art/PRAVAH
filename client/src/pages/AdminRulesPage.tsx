@@ -57,7 +57,7 @@ export const AdminRulesPage: React.FC = () => {
             Regulatory Rules Engine & Versioned Statutory Register
           </h3>
           <p className="text-slate-600 mt-1">
-            Official citations derived directly from the AICTE Approval Process Handbook (APH) 2024–25 to 2026–27. Business rules, turnaround SLAs, and escalation thresholds are dynamically parameter-controlled to eliminate hard-coded unverified regulatory assumptions. SAKSHAM assists the approval workflow and does not independently grant statutory approvals.
+            Official citations derived directly from the AICTE Approval Process Handbook (APH) 2024–25 to 2026–27. Business rules, turnaround SLAs, and escalation thresholds are dynamically parameter-controlled to eliminate hard-coded unverified regulatory assumptions. PRAVAH assists the approval workflow and does not independently grant statutory approvals.
           </p>
         </div>
         <div className="flex items-center space-x-2">

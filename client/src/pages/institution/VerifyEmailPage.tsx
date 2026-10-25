@@ -47,7 +47,7 @@ export const VerifyEmailPage: React.FC = () => {
             <GeometricMark size={48} />
           </div>
           <h1 className="text-2xl font-black text-gov-navy-950 tracking-tight">
-            SAKSHAM
+            PRAVAH
           </h1>
           <p className="text-xs font-bold text-gov-navy-800 uppercase tracking-widest">
             Institutional Email Verification
@@ -64,7 +64,7 @@ export const VerifyEmailPage: React.FC = () => {
                 Email Address Verified!
               </h2>
               <p className="text-xs text-slate-600">
-                Your institutional representative credentials have been authenticated. You may now sign in to SAKSHAM Institution Portal.
+                Your institutional representative credentials have been authenticated. You may now sign in to PRAVAH Institution Portal.
               </p>
               <div className="pt-2">
                 <Link
@@ -132,7 +132,7 @@ export const VerifyEmailPage: React.FC = () => {
       </div>
 
       <footer className="py-4 text-center text-xs text-slate-500">
-        AICTE SAKSHAM Identity Verification Service
+        AICTE PRAVAH Identity Verification Service
       </footer>
     </div>
   );

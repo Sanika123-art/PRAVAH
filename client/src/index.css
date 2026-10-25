@@ -16,6 +16,7 @@
   }
 
   body {
+    font-family: "Nirmala UI", "Noto Sans Devanagari", "Segoe UI", sans-serif;
     background-color: #f4f6f9;
     color: #0f172a;
     -webkit-font-smoothing: antialiased;

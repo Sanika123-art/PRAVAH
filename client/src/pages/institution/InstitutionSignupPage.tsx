@@ -108,7 +108,7 @@ export const InstitutionSignupPage: React.FC = () => {
             <GeometricMark size={48} />
           </div>
           <h1 className="text-2xl font-black text-gov-navy-950 tracking-tight">
-            SAKSHAM
+            PRAVAH
           </h1>
           <p className="text-xs font-bold text-gov-navy-800 uppercase tracking-widest">
             Institutional Representative Onboarding
@@ -396,7 +396,7 @@ export const InstitutionSignupPage: React.FC = () => {
       </div>
 
       <footer className="mt-8 text-center text-xs text-slate-500">
-        SAKSHAM AICTE Portal • Secure Institutional Registration Subsystem
+        PRAVAH AICTE Portal • Secure Institutional Registration Subsystem
       </footer>
     </div>
   );

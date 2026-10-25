@@ -6,7 +6,7 @@ interface GeometricMarkProps {
 }
 
 /**
- * Custom neutral geometric identity mark for SAKSHAM.
+ * Custom neutral geometric identity mark for PRAVAH.
  * Represents precision scrutiny, institutional stability, and structural compliance.
  * Original design that avoids copying any state emblem or copyrighted logo.
  */
@@ -19,7 +19,7 @@ export const GeometricMark: React.FC<GeometricMarkProps> = ({ className = '', si
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
-      aria-label="SAKSHAM Identity Mark"
+      aria-label="PRAVAH Identity Mark"
     >
       {/* Outer structural hexagon */}
       <polygon

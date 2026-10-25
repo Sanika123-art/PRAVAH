@@ -38,14 +38,14 @@ export const WorkflowQueuePage: React.FC = () => {
     loadQueueData();
   }, [loadQueueData]);
 
-  const scrutinyCount = applications.filter((a) => a.currentStage === 'SCRUTINY').length;
+  const scrutinyCount = applications.filter((a) => a.currentStage === 'SUBMITTED' || a.currentStage === 'SCRUTINY').length;
   const reScrutinyCount = applications.filter((a) => a.currentStage === 'RE_SCRUTINY').length;
   const evcTransitionsCount = applications.filter(
     (a) => a.currentStage === 'EVC_SCHEDULED' || a.currentStage === 'EVC_COMPLETED'
   ).length;
 
   const queueApplications = applications.filter((app) => {
-    if (activeTab === 'SCRUTINY') return app.currentStage === 'SCRUTINY';
+    if (activeTab === 'SCRUTINY') return app.currentStage === 'SUBMITTED' || app.currentStage === 'SCRUTINY';
     if (activeTab === 'RE_SCRUTINY') return app.currentStage === 'RE_SCRUTINY';
     if (activeTab === 'EVC_TRANSITIONS')
       return app.currentStage === 'EVC_SCHEDULED' || app.currentStage === 'EVC_COMPLETED';
@@ -129,7 +129,7 @@ export const WorkflowQueuePage: React.FC = () => {
 
       {/* Main Content Area */}
       {loading ? (
-        <LoadingState message="Querying live applications from SAKSHAM PostgreSQL service..." />
+        <LoadingState message="Querying live applications from PRAVAH PostgreSQL service..." />
       ) : error ? (
         <ErrorState message={error} onRetry={loadQueueData} />
       ) : (
@@ -197,12 +197,12 @@ export const WorkflowQueuePage: React.FC = () => {
                       >
                         Inspect Docket
                       </button>
-                      {app.currentStage === 'SCRUTINY' && (
+                      {(app.currentStage === 'SUBMITTED' || app.currentStage === 'SCRUTINY') && (
                         <button
                           onClick={() => setEvaluatingApplication(app)}
                           className="px-4 py-2 bg-gov-navy-900 text-white hover:bg-gov-navy-800 rounded text-xs font-bold flex items-center gap-1.5 shadow-sm"
                         >
-                          <FileCheck className="w-4 h-4 text-amber-300" /> Complete Checklist
+                          <FileCheck className="w-4 h-4 text-amber-300" /> {app.currentStage === 'SUBMITTED' ? 'Start Scrutiny' : 'Open Scrutiny'}
                         </button>
                       )}
                       {app.currentStage === 'RE_SCRUTINY' && (
@@ -253,8 +253,8 @@ export const WorkflowQueuePage: React.FC = () => {
       <ScrutinyEvaluationModal
         application={evaluatingApplication}
         onClose={() => setEvaluatingApplication(null)}
+        onDecisionSaved={loadQueueData}
       />
     </div>
   );
 };
-
