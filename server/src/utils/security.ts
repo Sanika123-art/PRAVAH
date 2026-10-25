@@ -73,7 +73,7 @@ export function getAuthCookieOptions(): CookieOptions {
   return {
     httpOnly: true,
     secure: IS_PROD,
-    sameSite: 'lax',
+    sameSite: IS_PROD ? 'none' : 'lax',
     path: '/',
     maxAge: 8 * 60 * 60 * 1000, // 8 hours
   };
@@ -86,7 +86,7 @@ export function getCsrfCookieOptions(): CookieOptions {
   return {
     httpOnly: false, // Must be readable by client JavaScript to set x-csrf-token header
     secure: IS_PROD,
-    sameSite: 'lax',
+    sameSite: IS_PROD ? 'none' : 'lax',
     path: '/',
     maxAge: 8 * 60 * 60 * 1000,
   };

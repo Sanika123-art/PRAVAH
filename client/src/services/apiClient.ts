@@ -23,6 +23,38 @@ export interface RequestOptions {
   headers?: Record<string, string>;
 }
 
+const TOKEN_KEY = 'saksham_auth_token';
+let inMemoryToken: string | null = null;
+
+export function getAuthToken(): string | null {
+  if (inMemoryToken) return inMemoryToken;
+  try {
+    const stored = sessionStorage.getItem(TOKEN_KEY) || localStorage.getItem(TOKEN_KEY);
+    if (stored) {
+      inMemoryToken = stored;
+      return stored;
+    }
+  } catch {
+    // Storage access might fail in restrictive iframe/private environments
+  }
+  return null;
+}
+
+export function setAuthToken(token: string | null): void {
+  inMemoryToken = token;
+  try {
+    if (token) {
+      sessionStorage.setItem(TOKEN_KEY, token);
+      localStorage.setItem(TOKEN_KEY, token);
+    } else {
+      sessionStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(TOKEN_KEY);
+    }
+  } catch {
+    // Ignore storage quota or access errors
+  }
+}
+
 /**
  * Helper to extract cookie value by name from document.cookie
  */
@@ -33,7 +65,7 @@ export function getCookie(name: string): string | null {
 }
 
 /**
- * Standard GET request with timeout and cookie transmission
+ * Standard GET request with timeout, cookie transmission, and Bearer token fallback
  */
 export async function apiGet<T>(
   endpoint: string,
@@ -60,14 +92,21 @@ export async function apiGet<T>(
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
+  const authToken = getAuthToken();
+  const requestHeaders: Record<string, string> = {
+    Accept: 'application/json',
+    ...headers,
+  };
+
+  if (authToken) {
+    requestHeaders['Authorization'] = `Bearer ${authToken}`;
+  }
+
   try {
     const response = await fetch(url, {
       method: 'GET',
       credentials: 'include', // Transmit saksham_token HttpOnly cookie
-      headers: {
-        Accept: 'application/json',
-        ...headers,
-      },
+      headers: requestHeaders,
       signal: controller.signal,
     });
 
@@ -128,6 +167,7 @@ export async function apiMutate<T>(
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
+  const authToken = getAuthToken();
   const csrfToken = getCookie('saksham_csrf_token');
 
   const requestHeaders: Record<string, string> = {
@@ -136,6 +176,10 @@ export async function apiMutate<T>(
     'X-Requested-With': 'XMLHttpRequest',
     ...headers,
   };
+
+  if (authToken) {
+    requestHeaders['Authorization'] = `Bearer ${authToken}`;
+  }
 
   if (csrfToken) {
     requestHeaders['x-csrf-token'] = csrfToken;
@@ -218,12 +262,17 @@ export async function apiUpload<T>(
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
+  const authToken = getAuthToken();
   const csrfToken = getCookie('saksham_csrf_token');
   const requestHeaders: Record<string, string> = {
     Accept: 'application/json',
     'X-Requested-With': 'XMLHttpRequest',
     ...headers,
   };
+
+  if (authToken) {
+    requestHeaders['Authorization'] = `Bearer ${authToken}`;
+  }
 
   if (csrfToken) {
     requestHeaders['x-csrf-token'] = csrfToken;

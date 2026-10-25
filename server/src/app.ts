@@ -11,7 +11,8 @@ import operationalRoutes from './routes/operationalRoutes';
 import institutionRoutes from './routes/institutionRoutes';
 import { requestLogger } from './middleware/requestLogger';
 import { errorHandler } from './middleware/errorHandler';
-import { csrfProtection } from './middleware/authMiddleware';
+import { csrfProtection, requireAuth } from './middleware/authMiddleware';
+import { getMe } from './controllers/authController';
 
 export const createApp = (): Express => {
   const app = express();
@@ -19,7 +20,12 @@ export const createApp = (): Express => {
   // Allowed origins for CORS (allowing credentials)
   const configuredOrigins = process.env.ALLOWED_ORIGINS
     ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
-    : ['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173'];
+    : [
+        'http://localhost:5173',
+        'http://localhost:3000',
+        'http://127.0.0.1:5173',
+        'https://pravah-client.onrender.com',
+      ];
 
   // Security and baseline middleware
   app.use(
@@ -54,6 +60,7 @@ export const createApp = (): Express => {
   // Mount API routers
   app.use('/api', healthRoutes); // Public health check endpoints
   app.use('/api/auth', authRoutes); // Auth endpoints (login, logout, me)
+  app.get('/api/me', requireAuth, getMe); // Direct alias for /api/auth/me
   app.use('/api/institution', institutionRoutes); // Institution Portal API
   app.use('/api/applications', applicationRoutes);
   app.use('/api/metrics', metricsRoutes);

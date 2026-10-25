@@ -1,10 +1,11 @@
-import { apiGet, apiPost } from './apiClient';
+import { apiGet, apiPost, setAuthToken } from './apiClient';
 import { AuthenticatedUser } from '@saksham/shared';
 
 export interface LoginResponse {
   success: boolean;
   data: {
     user: AuthenticatedUser;
+    token?: string;
     csrfToken: string;
     message: string;
   };
@@ -51,6 +52,9 @@ export async function loginWithCredentials(
     usernameOrEmail,
     password,
   });
+  if (response.data.token) {
+    setAuthToken(response.data.token);
+  }
   return response.data.user;
 }
 
@@ -60,7 +64,11 @@ export async function fetchCurrentOfficerProfile(): Promise<AuthenticatedUser> {
 }
 
 export async function logoutOfficer(): Promise<void> {
-  await apiPost<LogoutResponse>('/auth/logout', {});
+  try {
+    await apiPost<LogoutResponse>('/auth/logout', {});
+  } finally {
+    setAuthToken(null);
+  }
 }
 
 export async function registerInstitution(data: RegisterInstitutionData): Promise<{

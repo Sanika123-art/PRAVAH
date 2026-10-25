@@ -79,6 +79,7 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
       success: true,
       data: {
         user: authResult.user,
+        token: authResult.token,
         csrfToken: authResult.csrfToken,
         message: `Welcome, ${authResult.user.fullName}. Authentication successful.`,
       },
@@ -235,8 +236,13 @@ export const logout = async (req: Request, res: Response, next: NextFunction): P
       await logoutUser(req.user.id, req.ip);
     }
 
-    res.clearCookie('saksham_token', { path: '/' });
-    res.clearCookie('saksham_csrf_token', { path: '/' });
+    const authOpts = getAuthCookieOptions();
+    const csrfOpts = getCsrfCookieOptions();
+    delete (authOpts as any).maxAge;
+    delete (csrfOpts as any).maxAge;
+
+    res.clearCookie('saksham_token', authOpts);
+    res.clearCookie('saksham_csrf_token', csrfOpts);
 
     res.status(200).json({
       success: true,

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { calculateDashboardMetrics, MOCK_APPLICATIONS } from '@saksham/shared';
-import { apiGet, ApiError } from '../services/apiClient';
+import { apiGet, apiMutate, ApiError, setAuthToken, getAuthToken } from '../services/apiClient';
 import { fetchApplications, fetchApplicationById } from '../services/applicationService';
 import { fetchDashboardMetrics } from '../services/metricsService';
 import en from '../locales/en';
@@ -175,5 +175,36 @@ describe('SAKSHAM API Client & Absence of Silent Fallback', () => {
       expect(err.statusCode).toBe(408);
       expect(err.message).toContain('timed out');
     }
+  });
+
+  it('manages auth tokens and automatically attaches Authorization: Bearer header to requests', async () => {
+    const testToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.dummyTestTokenPayload.signature';
+    setAuthToken(testToken);
+    expect(getAuthToken()).toBe(testToken);
+
+    let capturedHeaders: Record<string, string> = {};
+    globalThis.fetch = vi.fn().mockImplementation((_url: string, init?: RequestInit) => {
+      capturedHeaders = (init?.headers || {}) as Record<string, string>;
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => ({ success: true, data: { user: { id: 'usr-1' } } }),
+      });
+    });
+
+    // Test GET request
+    await apiGet('/auth/me');
+    expect(capturedHeaders['Authorization']).toBe(`Bearer ${testToken}`);
+
+    // Test mutating request
+    await apiMutate('POST', '/applications/test', { key: 'value' });
+    expect(capturedHeaders['Authorization']).toBe(`Bearer ${testToken}`);
+
+    // Clearing token should remove it from subsequent requests
+    setAuthToken(null);
+    expect(getAuthToken()).toBeNull();
+
+    await apiGet('/auth/me');
+    expect(capturedHeaders['Authorization']).toBeUndefined();
   });
 });

@@ -456,4 +456,70 @@ describe('SAKSHAM Authentication & Authorization (Phase 3A)', () => {
       expect(repaired?.lockedUntil).toBeNull();
     });
   });
+
+  describe('Production Cross-Origin & Bearer Token Authentication Regression', () => {
+    it('returns token in login response and allows subsequent requests using Bearer token without cookies', async () => {
+      // 1. Perform login
+      const loginRes = await request(app)
+        .post('/api/auth/login')
+        .send({ usernameOrEmail: 'test.admin', password: demoPassword });
+
+      expect(loginRes.status).toBe(200);
+      expect(loginRes.body.success).toBe(true);
+      expect(loginRes.body.data.token).toBeDefined();
+      expect(typeof loginRes.body.data.token).toBe('string');
+      expect(loginRes.body.data.token.length).toBeGreaterThan(20);
+
+      const token = loginRes.body.data.token;
+
+      // 2. GET /api/auth/me with Bearer token (no cookies attached)
+      const authMeRes = await request(app)
+        .get('/api/auth/me')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(authMeRes.status).toBe(200);
+      expect(authMeRes.body.success).toBe(true);
+      expect(authMeRes.body.data.user.username).toBe('test.admin');
+
+      // 3. GET /api/me alias with Bearer token
+      const meRes = await request(app)
+        .get('/api/me')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(meRes.status).toBe(200);
+      expect(meRes.body.success).toBe(true);
+      expect(meRes.body.data.user.username).toBe('test.admin');
+
+      // 4. GET /api/metrics with Bearer token
+      const metricsRes = await request(app)
+        .get('/api/metrics')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(metricsRes.status).toBe(200);
+      expect(metricsRes.body.success).toBe(true);
+      expect(metricsRes.body.data.totalApplications).toBeDefined();
+
+      // 5. GET /api/applications?limit=100 with Bearer token
+      const appsRes = await request(app)
+        .get('/api/applications?limit=100')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(appsRes.status).toBe(200);
+      expect(appsRes.body.success).toBe(true);
+      expect(Array.isArray(appsRes.body.data)).toBe(true);
+
+      // 6. Anonymous request to /api/me should be rejected with 401
+      const anonMeRes = await request(app).get('/api/me');
+      expect(anonMeRes.status).toBe(401);
+      expect(anonMeRes.body.success).toBe(false);
+      expect(anonMeRes.body.error.message).toContain('Authentication required');
+
+      // 7. Request with invalid Bearer token should be rejected with 401
+      const invalidTokenRes = await request(app)
+        .get('/api/me')
+        .set('Authorization', 'Bearer invalid.jwt.token');
+      expect(invalidTokenRes.status).toBe(401);
+      expect(invalidTokenRes.body.success).toBe(false);
+    });
+  });
 });
