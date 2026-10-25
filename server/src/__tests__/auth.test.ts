@@ -365,4 +365,95 @@ describe('SAKSHAM Authentication & Authorization (Phase 3A)', () => {
       expect(res.body.error.message).toContain('CSRF');
     });
   });
+
+  describe('AICTE Officer Portal Demo-Account Authentication & Role Validation', () => {
+    it('should authenticate Scrutiny Officer by email and assign SCRUTINY_OFFICER role', async () => {
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({ usernameOrEmail: 'rk.sharma@aicte.gov.in', password: demoPassword });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.user.role).toBe('SCRUTINY_OFFICER');
+      expect(res.body.data.user.username).toBe('rk.sharma');
+    });
+
+    it('should authenticate Regional Officer by email and assign REGIONAL_OFFICER role', async () => {
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({ usernameOrEmail: 'neelesh.verma@aicte.gov.in', password: demoPassword });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.user.role).toBe('REGIONAL_OFFICER');
+      expect(res.body.data.user.username).toBe('neelesh.verma');
+    });
+
+    it('should authenticate EVC Expert by email and assign EVC_EXPERT role', async () => {
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({ usernameOrEmail: 'cm.rao@aicte.gov.in', password: demoPassword });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.user.role).toBe('EVC_EXPERT');
+      expect(res.body.data.user.username).toBe('cm.rao');
+    });
+
+    it('should authenticate Member Secretary by email and assign MEMBER_SECRETARY role', async () => {
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({ usernameOrEmail: 'rajendra.prasad@aicte.gov.in', password: demoPassword });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.user.role).toBe('MEMBER_SECRETARY');
+      expect(res.body.data.user.username).toBe('rajendra.prasad');
+    });
+
+    it('should allow officer authentication by username without domain suffix', async () => {
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({ usernameOrEmail: 'neelesh.verma', password: demoPassword });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.user.role).toBe('REGIONAL_OFFICER');
+    });
+
+    it('should reject officer demo login with an invalid password', async () => {
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({ usernameOrEmail: 'rk.sharma@aicte.gov.in', password: 'WrongPassword!123' });
+
+      expect(res.status).toBe(401);
+      expect(res.body.success).toBe(false);
+      expect(res.body.error.message).toContain('Invalid username or password');
+    });
+
+    it('should safely self-repair a demo account with an outdated password hash', async () => {
+      // Simulate outdated hash on rk.sharma
+      await prisma.systemUser.update({
+        where: { id: 'usr-scr-01' },
+        data: {
+          passwordHash: '$argon2id$v=19$m=65536,t=3,p=1$c2FtcGxlc2FsdA$outdatedcorruptedhashvalue1234567890',
+          failedLoginAttempts: 3,
+        },
+      });
+
+      // Login with valid demo password should trigger safe self-repair
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({ usernameOrEmail: 'rk.sharma@aicte.gov.in', password: demoPassword });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.user.role).toBe('SCRUTINY_OFFICER');
+
+      // Verify repaired hash in database
+      const repaired = await prisma.systemUser.findUnique({ where: { id: 'usr-scr-01' } });
+      expect(repaired?.failedLoginAttempts).toBe(0);
+      expect(repaired?.lockedUntil).toBeNull();
+    });
+  });
 });

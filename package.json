@@ -19,7 +19,8 @@
     "docker:down": "docker compose down",
     "db:generate": "npm run prisma:generate --workspace=server",
     "db:migrate": "npm run prisma:migrate --workspace=server",
-    "db:seed": "npm run prisma:seed --workspace=server"
+    "db:seed": "npm run prisma:seed --workspace=server",
+    "db:seed:officers": "npm run seed:officers --workspace=server"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

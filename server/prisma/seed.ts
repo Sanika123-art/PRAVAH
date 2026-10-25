@@ -49,7 +49,7 @@ const PRESET_SYSTEM_USERS = [
   {
     id: 'usr-ro-01',
     username: 'neelesh.verma',
-    email: 'ro.central@aicte.gov.in',
+    email: 'neelesh.verma@aicte.gov.in',
     fullName: 'Dr. Neelesh Verma',
     role: UserRole.REGIONAL_OFFICER,
     region: Region.CENTRAL,
@@ -58,7 +58,7 @@ const PRESET_SYSTEM_USERS = [
   {
     id: 'usr-evc-01',
     username: 'cm.rao',
-    email: 'cm.rao.evc@aicte.gov.in',
+    email: 'cm.rao@aicte.gov.in',
     fullName: 'Prof. C. M. Rao',
     role: UserRole.EVC_EXPERT,
     region: Region.SOUTH_WEST,
@@ -67,7 +67,7 @@ const PRESET_SYSTEM_USERS = [
   {
     id: 'usr-sac-01',
     username: 'bn.panda',
-    email: 'sac.hearing@aicte.gov.in',
+    email: 'bn.panda@aicte.gov.in',
     fullName: 'Justice (Retd.) B. N. Panda',
     role: UserRole.SAC_SHC_MEMBER,
     region: Region.NORTHERN,
@@ -76,7 +76,7 @@ const PRESET_SYSTEM_USERS = [
   {
     id: 'usr-ms-01',
     username: 'rajendra.prasad',
-    email: 'member.secretary@aicte.gov.in',
+    email: 'rajendra.prasad@aicte.gov.in',
     fullName: 'Prof. Rajendra Prasad',
     role: UserRole.MEMBER_SECRETARY,
     region: Region.NORTHERN,
@@ -101,15 +101,19 @@ async function main() {
   const defaultHash = await argon2.hash(DEMO_PASSWORD, { type: argon2.argon2id });
 
   for (const user of PRESET_SYSTEM_USERS) {
-    const existing = await prisma.systemUser.findUnique({ where: { id: user.id } });
     await prisma.systemUser.upsert({
       where: { id: user.id },
       update: {
+        username: user.username,
+        email: user.email,
         fullName: user.fullName,
         role: user.role,
         region: user.region,
         department: user.department,
-        passwordHash: existing?.passwordHash && existing.passwordHash.length > 0 ? existing.passwordHash : defaultHash,
+        passwordHash: defaultHash,
+        failedLoginAttempts: 0,
+        lockedUntil: null,
+        isActive: true,
       },
       create: {
         id: user.id,

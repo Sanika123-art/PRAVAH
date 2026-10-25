@@ -427,8 +427,8 @@ export const LoginPage: React.FC = () => {
                   <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                     Prototype Demo Credentials
                   </span>
-                  <span className="text-[10px] text-emerald-800 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">
-                    Argon2id Hash Verified
+                  <span className="text-[10px] text-emerald-800 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded font-mono font-medium">
+                    Password: AicteDev@2026!
                   </span>
                 </div>
                 <div className="grid grid-cols-2 gap-1.5 lp-fade" key={`demo-${activePortal}`}>
@@ -462,7 +462,7 @@ export const LoginPage: React.FC = () => {
                         className="text-left p-2 rounded border border-slate-200 bg-slate-50 hover:bg-amber-50 hover:border-amber-300 transition text-[11px]"
                       >
                         <div className="font-semibold text-slate-800">Dr. R.K. Sharma</div>
-                        <div className="text-slate-500 text-[10px]">Scrutiny Officer</div>
+                        <div className="text-slate-500 text-[10px]">rk.sharma@aicte.gov.in (Scrutiny)</div>
                       </button>
                       <button
                         type="button"
@@ -470,7 +470,7 @@ export const LoginPage: React.FC = () => {
                         className="text-left p-2 rounded border border-slate-200 bg-slate-50 hover:bg-amber-50 hover:border-amber-300 transition text-[11px]"
                       >
                         <div className="font-semibold text-slate-800">Dr. Neelesh Verma</div>
-                        <div className="text-slate-500 text-[10px]">Regional Officer (CRO)</div>
+                        <div className="text-slate-500 text-[10px]">neelesh.verma@aicte.gov.in (RO-CRO)</div>
                       </button>
                       <button
                         type="button"
@@ -478,15 +478,15 @@ export const LoginPage: React.FC = () => {
                         className="text-left p-2 rounded border border-slate-200 bg-slate-50 hover:bg-amber-50 hover:border-amber-300 transition text-[11px]"
                       >
                         <div className="font-semibold text-slate-800">Prof. C.M. Rao</div>
-                        <div className="text-slate-500 text-[10px]">EVC Committee</div>
+                        <div className="text-slate-500 text-[10px]">cm.rao@aicte.gov.in (EVC)</div>
                       </button>
                       <button
                         type="button"
                         onClick={() => handleQuickFill('MEMBER_SECRETARY')}
                         className="text-left p-2 rounded border border-slate-200 bg-slate-50 hover:bg-amber-50 hover:border-amber-300 transition text-[11px]"
                       >
-                        <div className="font-semibold text-slate-800">Member Secretary</div>
-                        <div className="text-slate-500 text-[10px]">National Bureau</div>
+                        <div className="font-semibold text-slate-800">Prof. Rajendra Prasad</div>
+                        <div className="text-slate-500 text-[10px]">rajendra.prasad@aicte.gov.in</div>
                       </button>
                     </>
                   )}
