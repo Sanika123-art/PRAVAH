@@ -270,15 +270,17 @@ export const getMe = async (req: Request, res: Response, next: NextFunction): Pr
 
     const profile = await getAuthenticatedUserProfile(req.user.id);
 
-    if (!req.cookies?.saksham_csrf_token) {
-      const newCsrf = generateCsrfToken();
-      res.cookie('saksham_csrf_token', newCsrf, getCsrfCookieOptions());
+    let csrfToken = req.cookies?.saksham_csrf_token;
+    if (!csrfToken || typeof csrfToken !== 'string' || csrfToken.length < 16) {
+      csrfToken = generateCsrfToken();
+      res.cookie('saksham_csrf_token', csrfToken, getCsrfCookieOptions());
     }
 
     res.status(200).json({
       success: true,
       data: {
         user: profile,
+        csrfToken,
       },
     });
   } catch (error) {
@@ -294,6 +296,27 @@ export const getMe = async (req: Request, res: Response, next: NextFunction): Pr
     }
     next(error);
   }
+};
+
+/**
+ * Bootstrap CSRF Token Endpoint.
+ * Issues or synchronizes client-side CSRF token and sets saksham_csrf_token cookie.
+ */
+export const getCsrf = async (req: Request, res: Response): Promise<void> => {
+  let csrfToken = req.cookies?.saksham_csrf_token;
+  if (!csrfToken || typeof csrfToken !== 'string' || csrfToken.length < 16) {
+    csrfToken = generateCsrfToken();
+  }
+
+  res.cookie('saksham_csrf_token', csrfToken, getCsrfCookieOptions());
+  res.setHeader('X-CSRF-Token', csrfToken);
+
+  res.status(200).json({
+    success: true,
+    data: {
+      csrfToken,
+    },
+  });
 };
 
 export const getDevEmails = async (_req: Request, res: Response): Promise<void> => {

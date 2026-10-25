@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { GeometricMark } from '../components/common/GeometricMark';
 import { useAuth, PRESET_USERS } from '../context/AuthContext';
+import { ensureCsrfToken } from '../services/apiClient';
 import { UserRole } from '@saksham/shared';
 import {
   Building2,
@@ -134,6 +135,11 @@ export const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
+
+  // Proactively bootstrap CSRF token so unauthenticated login submits with valid token
+  useEffect(() => {
+    ensureCsrfToken();
+  }, []);
 
   const handlePortalSwitch = (portal: 'INSTITUTION' | 'OFFICER') => {
     setActivePortal(portal);

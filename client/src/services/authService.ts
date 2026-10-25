@@ -1,4 +1,4 @@
-import { apiGet, apiPost, setAuthToken } from './apiClient';
+import { apiGet, apiPost, setAuthToken, setCsrfToken } from './apiClient';
 import { AuthenticatedUser } from '@saksham/shared';
 
 export interface LoginResponse {
@@ -15,6 +15,7 @@ export interface ProfileResponse {
   success: boolean;
   data: {
     user: AuthenticatedUser;
+    csrfToken?: string;
   };
 }
 
@@ -55,11 +56,17 @@ export async function loginWithCredentials(
   if (response.data.token) {
     setAuthToken(response.data.token);
   }
+  if (response.data.csrfToken) {
+    setCsrfToken(response.data.csrfToken);
+  }
   return response.data.user;
 }
 
 export async function fetchCurrentOfficerProfile(): Promise<AuthenticatedUser> {
   const response = await apiGet<ProfileResponse>('/auth/me');
+  if (response.data?.csrfToken) {
+    setCsrfToken(response.data.csrfToken);
+  }
   return response.data.user;
 }
 
@@ -68,6 +75,7 @@ export async function logoutOfficer(): Promise<void> {
     await apiPost<LogoutResponse>('/auth/logout', {});
   } finally {
     setAuthToken(null);
+    setCsrfToken(null);
   }
 }
 

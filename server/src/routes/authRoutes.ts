@@ -4,6 +4,7 @@ import {
   login,
   logout,
   getMe,
+  getCsrf,
   registerInstitution,
   verifyEmail,
   forgotPassword,
@@ -30,6 +31,7 @@ export const loginRateLimiter = rateLimit({
   },
 });
 
+router.get('/csrf', getCsrf);
 router.post('/login', loginRateLimiter, login);
 router.post('/register-institution', registerInstitution);
 router.post('/verify-email', verifyEmail);

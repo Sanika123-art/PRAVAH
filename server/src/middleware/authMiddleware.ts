@@ -267,9 +267,13 @@ export const csrfProtection = (req: Request, res: Response, next: NextFunction):
     return next();
   }
 
-  // If request uses cookie-based authentication, CSRF token validation is mandatory
-  if (req.cookies && req.cookies.saksham_token) {
-    const cookieCsrfToken = req.cookies.saksham_csrf_token;
+  // CSRF token validation is mandatory if the request carries ambient browser cookies (session or CSRF cookie)
+  const isCookieDriven = Boolean(
+    req.cookies && (req.cookies.saksham_token || req.cookies.saksham_csrf_token)
+  );
+
+  if (isCookieDriven) {
+    const cookieCsrfToken = req.cookies?.saksham_csrf_token;
     const headerCsrfToken = (req.headers['x-csrf-token'] || req.headers['x-xsrf-token']) as string | undefined;
 
     if (!cookieCsrfToken || !headerCsrfToken || cookieCsrfToken !== headerCsrfToken) {

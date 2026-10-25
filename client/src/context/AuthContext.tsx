@@ -5,7 +5,7 @@ import {
   fetchCurrentOfficerProfile,
   logoutOfficer,
 } from '../services/authService';
-import { setAuthToken } from '../services/apiClient';
+import { setAuthToken, setCsrfToken } from '../services/apiClient';
 
 export interface UserProfile extends AuthenticatedUser {
   name: string;
@@ -124,6 +124,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch {
       // Session missing, expired, or invalid
       setAuthToken(null);
+      setCsrfToken(null);
       setCurrentUser(null);
     } finally {
       setIsLoading(false);
@@ -159,6 +160,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Proceed with local clearance even if network fails
     } finally {
       setAuthToken(null);
+      setCsrfToken(null);
       setCurrentUser(null);
       setAuthError(null);
     }

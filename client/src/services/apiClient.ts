@@ -21,10 +21,14 @@ export class ApiError extends Error {
 export interface RequestOptions {
   timeoutMs?: number;
   headers?: Record<string, string>;
+  _isCsrfRetry?: boolean;
 }
 
 const TOKEN_KEY = 'saksham_auth_token';
+const CSRF_KEY = 'saksham_csrf_token';
 let inMemoryToken: string | null = null;
+let inMemoryCsrfToken: string | null = null;
+let ongoingCsrfPromise: Promise<string | null> | null = null;
 
 export function getAuthToken(): string | null {
   if (inMemoryToken) return inMemoryToken;
@@ -53,6 +57,85 @@ export function setAuthToken(token: string | null): void {
   } catch {
     // Ignore storage quota or access errors
   }
+}
+
+export function getCsrfToken(): string | null {
+  if (inMemoryCsrfToken) return inMemoryCsrfToken;
+  try {
+    const stored = sessionStorage.getItem(CSRF_KEY) || localStorage.getItem(CSRF_KEY);
+    if (stored) {
+      inMemoryCsrfToken = stored;
+      return stored;
+    }
+  } catch {
+    // Storage access might fail in restrictive iframe/private environments
+  }
+  return null;
+}
+
+export function setCsrfToken(token: string | null): void {
+  inMemoryCsrfToken = token;
+  try {
+    if (token) {
+      sessionStorage.setItem(CSRF_KEY, token);
+      localStorage.setItem(CSRF_KEY, token);
+    } else {
+      sessionStorage.removeItem(CSRF_KEY);
+      localStorage.removeItem(CSRF_KEY);
+    }
+  } catch {
+    // Ignore storage quota or access errors
+  }
+}
+
+/**
+ * Ensures a valid CSRF token is available. If missing or expired, fetches a fresh token
+ * from the backend bootstrap endpoint /auth/csrf while deduplicating in-flight calls.
+ */
+export async function ensureCsrfToken(forceRefresh = false): Promise<string | null> {
+  if (!forceRefresh) {
+    const existing = getCsrfToken() || getCookie('saksham_csrf_token');
+    if (existing) {
+      if (!getCsrfToken()) {
+        setCsrfToken(existing);
+      }
+      return existing;
+    }
+  }
+
+  if (ongoingCsrfPromise) {
+    return ongoingCsrfPromise;
+  }
+
+  ongoingCsrfPromise = (async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/auth/csrf`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          Accept: 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        return null;
+      }
+
+      const headerToken = response.headers.get('x-csrf-token');
+      const json = await response.json();
+      const token = headerToken || json?.data?.csrfToken || json?.csrfToken || null;
+      if (token) {
+        setCsrfToken(token);
+      }
+      return token;
+    } catch {
+      return null;
+    } finally {
+      ongoingCsrfPromise = null;
+    }
+  })();
+
+  return ongoingCsrfPromise;
 }
 
 /**
@@ -112,6 +195,11 @@ export async function apiGet<T>(
 
     clearTimeout(timeoutId);
 
+    const updatedCsrf = response.headers.get('x-csrf-token');
+    if (updatedCsrf) {
+      setCsrfToken(updatedCsrf);
+    }
+
     if (!response.ok) {
       let errorMessage = `HTTP Error ${response.status}: ${response.statusText}`;
       let errorDetails: unknown = null;
@@ -161,14 +249,17 @@ export async function apiMutate<T>(
   body?: unknown,
   options: RequestOptions = {}
 ): Promise<T> {
-  const { timeoutMs = 12000, headers = {} } = options;
+  const { timeoutMs = 12000, headers = {}, _isCsrfRetry = false } = options;
   const url = `${BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   const authToken = getAuthToken();
-  const csrfToken = getCookie('saksham_csrf_token');
+  let csrfToken = getCsrfToken() || getCookie('saksham_csrf_token');
+  if (!csrfToken) {
+    csrfToken = await ensureCsrfToken();
+  }
 
   const requestHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -196,6 +287,11 @@ export async function apiMutate<T>(
 
     clearTimeout(timeoutId);
 
+    const updatedCsrf = response.headers.get('x-csrf-token');
+    if (updatedCsrf) {
+      setCsrfToken(updatedCsrf);
+    }
+
     if (!response.ok) {
       let errorMessage = `HTTP Error ${response.status}: ${response.statusText}`;
       let errorDetails: unknown = null;
@@ -210,6 +306,18 @@ export async function apiMutate<T>(
       } catch {
         // Fallback
       }
+
+      const isCsrfError =
+        response.status === 403 &&
+        (errorMessage.toLowerCase().includes('csrf') ||
+          (typeof errorDetails === 'object' && JSON.stringify(errorDetails).toLowerCase().includes('csrf')));
+
+      if (isCsrfError && !_isCsrfRetry) {
+        setCsrfToken(null);
+        await ensureCsrfToken(true);
+        return apiMutate<T>(method, endpoint, body, { ...options, _isCsrfRetry: true });
+      }
+
       throw new ApiError(errorMessage, response.status, errorDetails);
     }
 
@@ -256,14 +364,17 @@ export async function apiUpload<T>(
   formData: FormData,
   options: RequestOptions = {}
 ): Promise<T> {
-  const { timeoutMs = 60000, headers = {} } = options;
+  const { timeoutMs = 60000, headers = {}, _isCsrfRetry = false } = options;
   const url = `${BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   const authToken = getAuthToken();
-  const csrfToken = getCookie('saksham_csrf_token');
+  let csrfToken = getCsrfToken() || getCookie('saksham_csrf_token');
+  if (!csrfToken) {
+    csrfToken = await ensureCsrfToken();
+  }
   const requestHeaders: Record<string, string> = {
     Accept: 'application/json',
     'X-Requested-With': 'XMLHttpRequest',
@@ -289,6 +400,11 @@ export async function apiUpload<T>(
 
     clearTimeout(timeoutId);
 
+    const updatedCsrf = response.headers.get('x-csrf-token');
+    if (updatedCsrf) {
+      setCsrfToken(updatedCsrf);
+    }
+
     if (!response.ok) {
       let errorMessage = `HTTP Error ${response.status}: ${response.statusText}`;
       let errorDetails: unknown = null;
@@ -301,6 +417,17 @@ export async function apiUpload<T>(
       } catch {
         // Fallback
       }
+      const isCsrfError =
+        response.status === 403 &&
+        (errorMessage.toLowerCase().includes('csrf') ||
+          (typeof errorDetails === 'object' && JSON.stringify(errorDetails).toLowerCase().includes('csrf')));
+
+      if (isCsrfError && !_isCsrfRetry) {
+        setCsrfToken(null);
+        await ensureCsrfToken(true);
+        return apiUpload<T>(endpoint, formData, { ...options, _isCsrfRetry: true });
+      }
+
       throw new ApiError(errorMessage, response.status, errorDetails);
     }
 

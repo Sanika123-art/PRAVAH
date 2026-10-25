@@ -12,7 +12,8 @@ import institutionRoutes from './routes/institutionRoutes';
 import { requestLogger } from './middleware/requestLogger';
 import { errorHandler } from './middleware/errorHandler';
 import { csrfProtection, requireAuth } from './middleware/authMiddleware';
-import { getMe } from './controllers/authController';
+import { getMe, getCsrf, login, logout } from './controllers/authController';
+import { loginRateLimiter } from './routes/authRoutes';
 
 export const createApp = (): Express => {
   const app = express();
@@ -47,6 +48,7 @@ export const createApp = (): Express => {
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token', 'x-xsrf-token', 'X-Requested-With'],
+      exposedHeaders: ['x-csrf-token', 'Authorization'],
     })
   );
 
@@ -59,8 +61,11 @@ export const createApp = (): Express => {
 
   // Mount API routers
   app.use('/api', healthRoutes); // Public health check endpoints
-  app.use('/api/auth', authRoutes); // Auth endpoints (login, logout, me)
+  app.use('/api/auth', authRoutes); // Auth endpoints (login, logout, me, csrf)
+  app.get('/api/csrf', getCsrf); // Direct alias for /api/auth/csrf
   app.get('/api/me', requireAuth, getMe); // Direct alias for /api/auth/me
+  app.post('/api/login', loginRateLimiter, login); // Direct alias for /api/auth/login
+  app.post('/api/logout', requireAuth, logout); // Direct alias for /api/auth/logout
   app.use('/api/institution', institutionRoutes); // Institution Portal API
   app.use('/api/applications', applicationRoutes);
   app.use('/api/metrics', metricsRoutes);

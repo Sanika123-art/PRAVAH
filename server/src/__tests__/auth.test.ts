@@ -651,4 +651,202 @@ describe('SAKSHAM Authentication & Authorization (Phase 3A)', () => {
       expect(user?.failedLoginAttempts).toBe(0);
     });
   });
+
+  describe('CSRF Token Lifecycle & Protection (Production Hardening)', () => {
+    it('bootstraps a CSRF token from GET /api/auth/csrf and GET /api/csrf with cookie and header', async () => {
+      const res = await request(app).get('/api/auth/csrf');
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(typeof res.body.data.csrfToken).toBe('string');
+      expect(res.body.data.csrfToken.length).toBe(64);
+
+      const csrfCookie = extractCookie(res, 'saksham_csrf_token=');
+      expect(csrfCookie).toContain('saksham_csrf_token=');
+      expect(csrfCookie).toMatch(/SameSite=(Lax|None)/i);
+      expect(res.headers['x-csrf-token']).toBe(res.body.data.csrfToken);
+
+      // Alias endpoint /api/csrf
+      const aliasRes = await request(app).get('/api/csrf');
+      expect(aliasRes.status).toBe(200);
+      expect(aliasRes.body.success).toBe(true);
+      expect(typeof aliasRes.body.data.csrfToken).toBe('string');
+    });
+
+    it('allows login with a valid matching CSRF token and cookie', async () => {
+      const csrfRes = await request(app).get('/api/auth/csrf');
+      const token = csrfRes.body.data.csrfToken;
+      const cookie = extractCookie(csrfRes, 'saksham_csrf_token=').split(';')[0];
+
+      const loginRes = await request(app)
+        .post('/api/auth/login')
+        .set('Cookie', cookie)
+        .set('x-csrf-token', token)
+        .send({
+          usernameOrEmail: 'test.admin',
+          password: demoPassword,
+        });
+
+      expect(loginRes.status).toBe(200);
+      expect(loginRes.body.success).toBe(true);
+      expect(loginRes.body.data.user.username).toBe('test.admin');
+      expect(loginRes.body.data.csrfToken).toBeDefined();
+
+      // Check root route alias /api/login also works with CSRF
+      const rootLoginRes = await request(app)
+        .post('/api/login')
+        .set('Cookie', cookie)
+        .set('x-csrf-token', token)
+        .send({
+          usernameOrEmail: 'test.admin',
+          password: demoPassword,
+        });
+
+      expect(rootLoginRes.status).toBe(200);
+      expect(rootLoginRes.body.success).toBe(true);
+    });
+
+    it('rejects login when ambient CSRF cookie is present but CSRF header is missing', async () => {
+      const csrfRes = await request(app).get('/api/auth/csrf');
+      const cookie = extractCookie(csrfRes, 'saksham_csrf_token=').split(';')[0];
+
+      const loginRes = await request(app)
+        .post('/api/auth/login')
+        .set('Cookie', cookie)
+        // deliberately omitted: .set('x-csrf-token', ...)
+        .send({
+          usernameOrEmail: 'test.admin',
+          password: demoPassword,
+        });
+
+      expect(loginRes.status).toBe(403);
+      expect(loginRes.body.error.message).toMatch(/CSRF/i);
+    });
+
+    it('rejects login when CSRF header does not match CSRF cookie', async () => {
+      const csrfRes = await request(app).get('/api/auth/csrf');
+      const cookie = extractCookie(csrfRes, 'saksham_csrf_token=').split(';')[0];
+
+      const loginRes = await request(app)
+        .post('/api/auth/login')
+        .set('Cookie', cookie)
+        .set('x-csrf-token', 'deliberately-invalid-csrf-token-1234567890abcdef')
+        .send({
+          usernameOrEmail: 'test.admin',
+          password: demoPassword,
+        });
+
+      expect(loginRes.status).toBe(403);
+      expect(loginRes.body.error.message).toMatch(/CSRF/i);
+    });
+
+    it('returns csrfToken on GET /api/me and GET /api/auth/me for authenticated user', async () => {
+      const loginRes = await request(app)
+        .post('/api/auth/login')
+        .send({
+          usernameOrEmail: 'test.admin',
+          password: demoPassword,
+        });
+
+      const authToken = loginRes.body.data.token;
+      const authCookie = extractCookie(loginRes, 'saksham_token=').split(';')[0];
+
+      const meRes = await request(app)
+        .get('/api/auth/me')
+        .set('Cookie', authCookie)
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(meRes.status).toBe(200);
+      expect(meRes.body.success).toBe(true);
+      expect(meRes.body.data.csrfToken).toBeDefined();
+
+      const rootMeRes = await request(app)
+        .get('/api/me')
+        .set('Cookie', authCookie)
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(rootMeRes.status).toBe(200);
+      expect(rootMeRes.body.success).toBe(true);
+      expect(rootMeRes.body.data.csrfToken).toBeDefined();
+    });
+
+    it('allows logout with matching CSRF token and cookie, clearing session and CSRF cookies', async () => {
+      const loginRes = await request(app)
+        .post('/api/auth/login')
+        .send({
+          usernameOrEmail: 'test.admin',
+          password: demoPassword,
+        });
+
+      const authToken = loginRes.body.data.token;
+      const authCookie = extractCookie(loginRes, 'saksham_token=').split(';')[0];
+      const csrfCookie = extractCookie(loginRes, 'saksham_csrf_token=').split(';')[0];
+      const csrfToken = loginRes.body.data.csrfToken;
+
+      const logoutRes = await request(app)
+        .post('/api/auth/logout')
+        .set('Cookie', `${authCookie}; ${csrfCookie}`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .set('x-csrf-token', csrfToken);
+
+      expect(logoutRes.status).toBe(200);
+      expect(logoutRes.body.success).toBe(true);
+
+      // Verify cookies are expired/cleared
+      const setCookies = extractAllCookies(logoutRes).join('; ');
+      expect(setCookies).toMatch(/saksham_token=;/);
+      expect(setCookies).toMatch(/saksham_csrf_token=;/);
+
+      // Also test alias /api/logout
+      const login2 = await request(app)
+        .post('/api/login')
+        .send({
+          usernameOrEmail: 'test.admin',
+          password: demoPassword,
+        });
+      const authCookie2 = extractCookie(login2, 'saksham_token=').split(';')[0];
+      const csrfCookie2 = extractCookie(login2, 'saksham_csrf_token=').split(';')[0];
+      const csrfToken2 = login2.body.data.csrfToken;
+
+      const rootLogoutRes = await request(app)
+        .post('/api/logout')
+        .set('Cookie', `${authCookie2}; ${csrfCookie2}`)
+        .set('Authorization', `Bearer ${login2.body.data.token}`)
+        .set('x-csrf-token', csrfToken2);
+
+      expect(rootLogoutRes.status).toBe(200);
+      expect(rootLogoutRes.body.success).toBe(true);
+    });
+
+    it('rejects logout when ambient CSRF cookie is present but CSRF header is missing or mismatched', async () => {
+      const loginRes = await request(app)
+        .post('/api/auth/login')
+        .send({
+          usernameOrEmail: 'test.admin',
+          password: demoPassword,
+        });
+
+      const authToken = loginRes.body.data.token;
+      const authCookie = extractCookie(loginRes, 'saksham_token=').split(';')[0];
+      const csrfCookie = extractCookie(loginRes, 'saksham_csrf_token=').split(';')[0];
+
+      // Missing header
+      const missingRes = await request(app)
+        .post('/api/auth/logout')
+        .set('Cookie', `${authCookie}; ${csrfCookie}`)
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(missingRes.status).toBe(403);
+      expect(missingRes.body.error.message).toMatch(/CSRF/i);
+
+      // Mismatched header
+      const mismatchedRes = await request(app)
+        .post('/api/auth/logout')
+        .set('Cookie', `${authCookie}; ${csrfCookie}`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .set('x-csrf-token', 'wrong_csrf_token_value');
+
+      expect(mismatchedRes.status).toBe(403);
+      expect(mismatchedRes.body.error.message).toMatch(/CSRF/i);
+    });
+  });
 });
