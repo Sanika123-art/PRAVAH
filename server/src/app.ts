@@ -30,7 +30,7 @@ export const createApp = (): Express => {
 
   app.use(
     cors({
-      origin: (origin, callback) => {
+      origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
         // Allow requests with no origin (e.g. mobile apps, curl, server-to-server) or matching allowed origins
         if (!origin || configuredOrigins.includes(origin)) {
           callback(null, true);
