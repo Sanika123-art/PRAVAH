@@ -10,6 +10,11 @@ import {
 
 import argon2 from 'argon2';
 
+import path from 'path';
+import dotenv from 'dotenv';
+dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+
 const prisma = new PrismaClient();
 const DEMO_PASSWORD = process.env.DEMO_USER_PASSWORD || 'AicteDev@2026!';
 
