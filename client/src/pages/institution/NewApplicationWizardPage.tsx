@@ -228,16 +228,16 @@ export const NewApplicationWizardPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Top Breadcrumb and Actions */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white border-2 border-[#17202B] p-4 rounded-sm shadow-[2px_2px_0px_#17202B]">
         <div>
-          <div className="flex items-center space-x-2 text-xs text-slate-500 mb-1">
+          <div className="flex items-center space-x-2 text-xs font-mono text-[#5B6875] uppercase tracking-wider mb-1">
             <span>Institution Portal</span>
             <span>/</span>
             <span>Applications</span>
             <span>/</span>
-            <span className="text-slate-800 font-bold">New Application Wizard</span>
+            <span className="text-[#17202B] font-bold">New Application Wizard</span>
           </div>
-          <h1 className="text-xl font-bold text-slate-900">
+          <h1 className="text-xl font-black text-[#142B45] uppercase tracking-wide">
             AICTE Approval Application Creation
           </h1>
         </div>
@@ -247,50 +247,58 @@ export const NewApplicationWizardPage: React.FC = () => {
             type="button"
             onClick={handleSaveDraft}
             disabled={isSaving}
-            className="inline-flex items-center space-x-1.5 py-2 px-3 rounded-lg bg-white border border-slate-300 text-slate-700 text-xs font-bold hover:bg-slate-50 transition shadow-sm disabled:opacity-50"
+            className="gov-btn-secondary py-2 px-3 text-xs disabled:opacity-50"
           >
-            <Save className="w-3.5 h-3.5 text-slate-500" />
-            <span>{isSaving ? 'Saving...' : 'Save Draft'}</span>
+            <Save className="w-3.5 h-3.5 text-[#5B6875]" />
+            <span>{isSaving ? 'Saving Draft...' : 'Save Draft Dossier'}</span>
           </button>
         </div>
       </div>
 
       {/* Wizard Progress Bar */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
-        <div className="flex items-center justify-between min-w-[640px]">
+      <div className="bg-white p-4 border-2 border-[#17202B] rounded-sm shadow-[2px_2px_0px_#17202B] overflow-x-auto">
+        <div className="flex items-center justify-between min-w-[700px] gap-2">
           {STEPS.map((s, idx) => {
             const isCompleted = currentStep > s.id;
             const isCurrent = currentStep === s.id;
 
             return (
               <React.Fragment key={s.id}>
-                <div className="flex items-center space-x-3">
+                <div className={`flex items-center space-x-2.5 p-2 rounded-sm border-2 transition ${
+                  isCurrent
+                    ? 'bg-[#142B45] text-white border-[#17202B] shadow-[2px_2px_0px_#17202B]'
+                    : isCompleted
+                    ? 'bg-[#EAF0F5] text-[#17202B] border-[#17202B]'
+                    : 'bg-[#FAF9F6] text-[#5B6875] border-slate-300 opacity-70'
+                }`}>
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition ${
-                      isCompleted
-                        ? 'bg-emerald-600 text-white'
-                        : isCurrent
-                        ? 'bg-gov-navy-950 text-white ring-4 ring-blue-100'
-                        : 'bg-slate-100 text-slate-400'
+                    className={`w-7 h-7 rounded-sm border-2 flex items-center justify-center font-mono font-black text-xs ${
+                      isCurrent
+                        ? 'bg-[#E98232] text-white border-white'
+                        : isCompleted
+                        ? 'bg-[#18794E] text-white border-[#17202B]'
+                        : 'bg-white text-[#5B6875] border-slate-400'
                     }`}
                   >
-                    {isCompleted ? <CheckCircle2 className="w-5 h-5" /> : s.id}
+                    {isCompleted ? <CheckCircle2 className="w-4 h-4" /> : s.id}
                   </div>
                   <div>
                     <div
-                      className={`text-xs font-bold ${
-                        isCurrent ? 'text-gov-navy-950' : isCompleted ? 'text-slate-700' : 'text-slate-400'
+                      className={`text-xs font-black uppercase tracking-wider ${
+                        isCurrent ? 'text-white' : 'text-[#17202B]'
                       }`}
                     >
                       {s.title}
                     </div>
-                    <div className="text-[10px] text-slate-400">{s.desc}</div>
+                    <div className={`text-[10px] font-mono ${isCurrent ? 'text-slate-300' : 'text-[#5B6875]'}`}>
+                      {s.desc}
+                    </div>
                   </div>
                 </div>
                 {idx < STEPS.length - 1 && (
                   <div
-                    className={`flex-1 h-0.5 mx-4 transition ${
-                      currentStep > idx + 1 ? 'bg-emerald-500' : 'bg-slate-200'
+                    className={`h-0.5 w-6 border-t-2 border-dashed ${
+                      currentStep > idx + 1 ? 'border-[#18794E]' : 'border-slate-300'
                     }`}
                   />
                 )}
@@ -302,42 +310,42 @@ export const NewApplicationWizardPage: React.FC = () => {
 
       {/* Notifications */}
       {errorMessage && (
-        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start space-x-2.5">
-          <AlertCircle className="w-4 h-4 flex-shrink-0 text-rose-600 mt-0.5" />
-          <span className="font-semibold">{errorMessage}</span>
+        <div className="p-3.5 rounded-sm bg-rose-50 border-2 border-rose-700 text-rose-950 text-xs flex items-start space-x-2.5 shadow-[2px_2px_0px_#b91c1c]">
+          <AlertCircle className="w-4 h-4 flex-shrink-0 text-rose-700 mt-0.5" />
+          <span className="font-bold">{errorMessage}</span>
         </div>
       )}
 
       {successMessage && (
-        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-start space-x-2.5">
-          <CheckCircle2 className="w-4 h-4 flex-shrink-0 text-emerald-600 mt-0.5" />
-          <span className="font-semibold">{successMessage}</span>
+        <div className="p-3.5 rounded-sm bg-emerald-50 border-2 border-[#18794E] text-emerald-950 text-xs flex items-start space-x-2.5 shadow-[2px_2px_0px_#18794E]">
+          <CheckCircle2 className="w-4 h-4 flex-shrink-0 text-[#18794E] mt-0.5" />
+          <span className="font-bold">{successMessage}</span>
         </div>
       )}
 
       {/* Step Panels */}
-      <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm min-h-[400px] flex flex-col justify-between">
+      <div className="bg-white p-6 sm:p-8 border-2 border-[#17202B] rounded-sm shadow-[2px_2px_0px_#17202B] min-h-[440px] flex flex-col justify-between">
         {/* Step 1: Category & Academic Cycle */}
         {currentStep === 1 && (
-          <div className="space-y-5">
-            <div>
-              <h2 className="text-base font-bold text-slate-900">
-                Step 1: Select Application Category & Academic Cycle
+          <div className="space-y-6">
+            <div className="border-b-2 border-[#17202B] pb-3">
+              <h2 className="text-base font-black text-[#142B45] uppercase tracking-wide">
+                Step 1: Select Application Category & Academic Approval Cycle
               </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Configured statutory categories determined by AICTE Approval Process Handbook (APH 2024–27).
+              <p className="text-xs text-[#5B6875] mt-0.5">
+                Statutory categories configured in compliance with AICTE Approval Process Handbook (APH 2024–27).
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Application Category *
+                <label className="block text-xs font-black uppercase tracking-wider text-[#17202B] mb-1.5">
+                  Regulatory Approval Category *
                 </label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value as ApplicationCategory)}
-                  className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gov-navy-600"
+                  className="w-full px-3 py-2.5 text-xs font-semibold bg-[#FAF9F6] border-2 border-[#17202B] rounded-sm text-[#17202B] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#142B45]"
                 >
                   <option value="NEW_INSTITUTE">Establishment of New Technical Institution</option>
                   <option value="EOA_EXISTING">Extension of Approval (EoA Existing)</option>
@@ -350,27 +358,27 @@ export const NewApplicationWizardPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-black uppercase tracking-wider text-[#17202B] mb-1.5">
                   Academic Approval Cycle *
                 </label>
                 <select
                   value={academicCycle}
                   onChange={(e) => setAcademicCycle(e.target.value)}
-                  className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gov-navy-600"
+                  className="w-full px-3 py-2.5 text-xs font-semibold bg-[#FAF9F6] border-2 border-[#17202B] rounded-sm text-[#17202B] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#142B45]"
                 >
-                  <option value="2026-27">Academic Cycle 2026–27 (Current Active)</option>
+                  <option value="2026-27">Academic Cycle 2026–27 (Current Active Cycle)</option>
                   <option value="2027-28">Academic Cycle 2027–28</option>
                 </select>
               </div>
             </div>
 
-            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600 space-y-1">
-              <div className="font-bold text-slate-900 flex items-center space-x-1.5">
-                <HelpCircle className="w-4 h-4 text-blue-600" />
-                <span>Statutory Note on Category Selection</span>
+            <div className="p-4 bg-[#EAF0F5] rounded-sm border-2 border-[#17202B] text-xs text-[#17202B] space-y-1.5 shadow-[1px_1px_0px_#17202B]">
+              <div className="font-black text-[#142B45] flex items-center space-x-1.5 uppercase tracking-wide">
+                <HelpCircle className="w-4 h-4 text-[#142B45]" />
+                <span>Statutory Regulatory Note</span>
               </div>
-              <p>
-                Each category invokes category-specific document checklists and preliminary automated scrutiny rules. For example, <strong>Establishment of New Technical Institution</strong> mandates registered 30-year land lease, occupancy certificate, fire safety clearance, and joint FDR endowment.
+              <p className="leading-relaxed">
+                Each category invokes category-specific statutory document checklists and automated scrutiny parameters. For example, <strong>Establishment of New Technical Institution</strong> mandates registered 30-year land lease, occupancy certificate, fire safety clearance, and joint FDR endowment.
               </p>
             </div>
           </div>
@@ -378,66 +386,65 @@ export const NewApplicationWizardPage: React.FC = () => {
 
         {/* Step 2: Review Institution Info */}
         {currentStep === 2 && (
-          <div className="space-y-5">
-            <div>
-              <h2 className="text-base font-bold text-slate-900">
-                Step 2: Review Institutional Identification & Jurisdiction
+          <div className="space-y-6">
+            <div className="border-b-2 border-[#17202B] pb-3">
+              <h2 className="text-base font-black text-[#142B45] uppercase tracking-wide">
+                Step 2: Institutional Identity & Regional Bureau Jurisdiction
               </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Authoritative record retrieved from PRAVAH Institutional Directory.
+              <p className="text-xs text-[#5B6875] mt-0.5">
+                Authoritative institutional record retrieved from PRAVAH Central Directory.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <span className="text-[11px] font-semibold text-slate-500">Institution Name</span>
-                <p className="text-sm font-bold text-slate-900">{currentUser?.institutionName}</p>
+              <div className="p-4 bg-[#FAF9F6] rounded-sm border-2 border-[#17202B]">
+                <span className="text-[10px] font-mono uppercase tracking-wider font-bold text-[#5B6875]">Institution Registered Name</span>
+                <p className="text-sm font-black text-[#17202B] mt-0.5">{currentUser?.institutionName}</p>
               </div>
 
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <span className="text-[11px] font-semibold text-slate-500">Permanent Institute ID (PID)</span>
-                <p className="text-sm font-bold font-mono text-gov-navy-950">
+              <div className="p-4 bg-[#FAF9F6] rounded-sm border-2 border-[#17202B]">
+                <span className="text-[10px] font-mono uppercase tracking-wider font-bold text-[#5B6875]">Permanent Institute ID (PID)</span>
+                <p className="text-sm font-black font-mono text-[#142B45] mt-0.5">
                   {currentUser?.permanentInstituteId || 'Will be allocated upon first approval'}
                 </p>
               </div>
 
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <span className="text-[11px] font-semibold text-slate-500">Regional Bureau Jurisdiction</span>
-                <p className="text-sm font-bold text-slate-900">
+              <div className="p-4 bg-[#FAF9F6] rounded-sm border-2 border-[#17202B]">
+                <span className="text-[10px] font-mono uppercase tracking-wider font-bold text-[#5B6875]">Regional Bureau Jurisdiction</span>
+                <p className="text-sm font-black text-[#17202B] mt-0.5">
                   {currentUser?.region ? currentUser.region.replace('_', ' ') : 'National Pool (Assigned)'}
                 </p>
               </div>
 
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <span className="text-[11px] font-semibold text-slate-500">Authoritative Representative</span>
-                <p className="text-sm font-bold text-slate-900">
+              <div className="p-4 bg-[#FAF9F6] rounded-sm border-2 border-[#17202B]">
+                <span className="text-[10px] font-mono uppercase tracking-wider font-bold text-[#5B6875]">Authorized Representative</span>
+                <p className="text-sm font-black text-[#17202B] mt-0.5">
                   {currentUser?.fullName} ({currentUser?.email})
                 </p>
               </div>
             </div>
 
-            <p className="text-xs text-slate-500">
-              Need to update permanent institution contact details? You can do so in the{' '}
-              <span className="font-bold text-blue-600">Institution Profile</span> tab.
+            <p className="text-xs text-[#5B6875] font-mono">
+              Note: To update permanent campus coordinates or trust details, navigate to the <span className="font-bold text-[#142B45] underline">Institution Profile</span> desk.
             </p>
           </div>
         )}
 
         {/* Step 3: Programmes & Intake */}
         {currentStep === 3 && (
-          <div className="space-y-5">
-            <div>
-              <h2 className="text-base font-bold text-slate-900">
+          <div className="space-y-6">
+            <div className="border-b-2 border-[#17202B] pb-3">
+              <h2 className="text-base font-black text-[#142B45] uppercase tracking-wide">
                 Step 3: Academic Capacity & Campus Infrastructure
               </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Statutory intake capacity and campus land area required for physical verification.
+              <p className="text-xs text-[#5B6875] mt-0.5">
+                Statutory intake capacity and campus land area required for physical compliance verification.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-black uppercase tracking-wider text-[#17202B] mb-1.5">
                   Total Requested Annual Intake (Seats) *
                 </label>
                 <input
@@ -446,13 +453,13 @@ export const NewApplicationWizardPage: React.FC = () => {
                   step="30"
                   value={requestedIntake}
                   onChange={(e) => setRequestedIntake(Number(e.target.value))}
-                  className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gov-navy-600"
+                  className="w-full px-3 py-2 text-xs font-mono font-bold bg-[#FAF9F6] border-2 border-[#17202B] rounded-sm text-[#17202B] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#142B45]"
                 />
-                <span className="text-[11px] text-slate-500 mt-0.5 block">Standard AICTE division batch: 60 seats.</span>
+                <span className="text-[10px] font-mono text-[#5B6875] mt-1 block">Standard AICTE division unit: 60 seats per division.</span>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-black uppercase tracking-wider text-[#17202B] mb-1.5">
                   Campus Land Area in Acres *
                 </label>
                 <input
@@ -461,31 +468,31 @@ export const NewApplicationWizardPage: React.FC = () => {
                   step="0.5"
                   value={landAreaAcres}
                   onChange={(e) => setLandAreaAcres(Number(e.target.value))}
-                  className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gov-navy-600"
+                  className="w-full px-3 py-2 text-xs font-mono font-bold bg-[#FAF9F6] border-2 border-[#17202B] rounded-sm text-[#17202B] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#142B45]"
                 />
-                <span className="text-[11px] text-slate-500 mt-0.5 block">Minimum requirement: Urban 2.5 acres / Rural 7.5 acres.</span>
+                <span className="text-[10px] font-mono text-[#5B6875] mt-1 block">APH Handbook Threshold: Urban min 2.5 acres / Rural min 7.5 acres.</span>
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-2">
-                Proposed Technical Programme & Courses
+              <label className="block text-xs font-black uppercase tracking-wider text-[#17202B] mb-2">
+                Proposed Technical Programmes & Departmental Allocation
               </label>
-              <div className="border border-slate-200 rounded-xl overflow-hidden text-xs">
-                <table className="w-full text-left">
-                  <thead className="bg-slate-50 font-semibold text-slate-600 border-b border-slate-200">
+              <div className="border-2 border-[#17202B] rounded-sm overflow-hidden text-xs shadow-[2px_2px_0px_#17202B]">
+                <table className="admin-table">
+                  <thead>
                     <tr>
-                      <th className="py-2.5 px-3">Course / Specialization</th>
-                      <th className="py-2.5 px-3">Level</th>
-                      <th className="py-2.5 px-3">Requested Intake</th>
+                      <th>Course / Specialization</th>
+                      <th>Level</th>
+                      <th className="text-right">Requested Intake</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody>
                     {courses.map((c, i) => (
                       <tr key={i}>
-                        <td className="py-2 px-3 font-medium text-slate-900">{c.name}</td>
-                        <td className="py-2 px-3 text-slate-600">{c.level}</td>
-                        <td className="py-2 px-3 font-mono font-bold text-slate-800">{c.intake} seats</td>
+                        <td className="font-bold text-[#17202B]">{c.name}</td>
+                        <td className="text-[#5B6875]">{c.level}</td>
+                        <td className="text-right font-mono font-bold text-[#142B45]">{c.intake} SEATS</td>
                       </tr>
                     ))}
                   </tbody>
@@ -497,58 +504,59 @@ export const NewApplicationWizardPage: React.FC = () => {
 
         {/* Step 4: Category Document Checklist */}
         {currentStep === 4 && (
-          <div className="space-y-5">
-            <div>
-              <h2 className="text-base font-bold text-slate-900">
-                Step 4: Category-Specific Statutory Document Checklist
+          <div className="space-y-6">
+            <div className="border-b-2 border-[#17202B] pb-3">
+              <h2 className="text-base font-black text-[#142B45] uppercase tracking-wide">
+                Step 4: Statutory Document Checklist & Evidence Repository
               </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Upload verified PDF/JPEG/PNG documents corresponding to AICTE APH 2024–27 clauses.
+              <p className="text-xs text-[#5B6875] mt-0.5">
+                Upload verified PDF/JPEG documents corresponding to AICTE APH 2024–27 regulatory clauses.
               </p>
             </div>
 
             <div className="space-y-3">
               {checklist.length === 0 ? (
-                <div className="p-6 text-center text-xs text-slate-500">
-                  Loading category document requirements...
+                <div className="p-6 text-center text-xs font-mono text-[#5B6875] border-2 border-dashed border-[#17202B]">
+                  Retrieving statutory document checklist for selected category...
                 </div>
               ) : (
                 checklist.map((item) => (
                   <div
                     key={item.documentType}
-                    className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-3"
+                    className="p-4 rounded-sm border-2 border-[#17202B] bg-[#FAF9F6] flex flex-col md:flex-row justify-between items-start md:items-center gap-3 shadow-[1px_1px_0px_#17202B]"
                   >
                     <div className="flex-1">
                       <div className="flex items-center space-x-2">
-                        <span className="text-xs font-bold text-slate-900">{item.title}</span>
+                        <span className="text-xs font-black text-[#17202B] uppercase tracking-wider">{item.title}</span>
                         {item.mandatory && (
-                          <span className="text-[10px] font-bold px-1.5 py-0.2 bg-rose-100 text-rose-800 rounded">
-                            Mandatory
+                          <span className="text-[10px] font-mono font-black px-1.5 py-0.5 bg-rose-100 text-rose-900 border border-rose-400 rounded-sm">
+                            MANDATORY
                           </span>
                         )}
-                        <span className="text-[10px] text-slate-400 font-mono">{item.aphClause}</span>
+                        <span className="text-[10px] text-[#5B6875] font-mono font-bold">[{item.aphClause}]</span>
                       </div>
-                      <p className="text-xs text-slate-600 mt-0.5">{item.description}</p>
+                      <p className="text-xs text-[#5B6875] mt-0.5 leading-relaxed">{item.description}</p>
 
                       {item.isUploaded && item.uploadedDocument && (
-                        <div className={`mt-2 p-2 rounded border text-xs ${
+                        <div className={`mt-2 p-2.5 rounded-sm border-2 text-xs ${
                           item.uploadedDocument.verificationStatus === 'VERIFIED'
-                            ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                            ? 'text-emerald-950 bg-emerald-50 border-[#18794E]'
                             : item.uploadedDocument.verificationStatus === 'REJECTED'
-                              ? 'text-rose-700 bg-rose-50 border-rose-200'
-                              : 'text-amber-800 bg-amber-50 border-amber-200'
+                              ? 'text-rose-950 bg-rose-50 border-rose-700'
+                              : 'text-amber-950 bg-amber-50 border-amber-600'
                         }`}>
-                          <div className="flex items-center space-x-1.5">
+                          <div className="flex items-center space-x-1.5 font-bold">
                             {item.uploadedDocument.verificationStatus === 'VERIFIED'
-                              ? <CheckCircle2 className="w-3.5 h-3.5" />
+                              ? <CheckCircle2 className="w-3.5 h-3.5 text-[#18794E]" />
                               : <AlertCircle className="w-3.5 h-3.5" />}
-                            <span><strong>{item.uploadedDocument.verificationStatus}</strong>: {item.uploadedDocument.fileName} ({(item.uploadedDocument.fileSize / 1024).toFixed(1)} KB)</span>
+                            <span>STATUS: {item.uploadedDocument.verificationStatus}</span>
+                            <span className="font-mono font-normal">| {item.uploadedDocument.fileName} ({(item.uploadedDocument.fileSize / 1024).toFixed(1)} KB)</span>
                           </div>
                           {item.uploadedDocument.verificationExplanation && (
-                            <p className="mt-1">{item.uploadedDocument.verificationExplanation}</p>
+                            <p className="mt-1 font-mono text-[11px]">{item.uploadedDocument.verificationExplanation}</p>
                           )}
                           {item.uploadedDocument.validationResults?.some((rule) => !rule.passed) && (
-                            <ul className="mt-1 list-disc list-inside">
+                            <ul className="mt-1 list-disc list-inside space-y-0.5 font-mono text-[11px]">
                               {item.uploadedDocument.validationResults
                                 .filter((rule) => !rule.passed)
                                 .map((rule) => <li key={rule.rule}>{rule.rule}: {rule.explanation}</li>)}
@@ -559,9 +567,9 @@ export const NewApplicationWizardPage: React.FC = () => {
                     </div>
 
                     <div className="flex-shrink-0">
-                      <label className="inline-flex items-center space-x-1.5 py-2 px-3 rounded-lg bg-white border border-slate-300 text-slate-700 text-xs font-bold hover:bg-slate-50 cursor-pointer shadow-sm transition">
-                        <Upload className="w-3.5 h-3.5 text-blue-600" />
-                        <span>{uploadingDocType === item.documentType ? 'Uploading...' : item.isUploaded ? 'Re-upload Document' : 'Upload File'}</span>
+                      <label className="gov-btn-secondary py-1.5 px-3 text-xs cursor-pointer shadow-[2px_2px_0px_#17202B]">
+                        <Upload className="w-3.5 h-3.5 text-[#142B45]" />
+                        <span>{uploadingDocType === item.documentType ? 'Uploading...' : item.isUploaded ? 'Replace Document' : 'Upload File'}</span>
                         <input
                           type="file"
                           accept=".pdf,.png,.jpg,.jpeg"
@@ -580,50 +588,50 @@ export const NewApplicationWizardPage: React.FC = () => {
 
         {/* Step 5: Preliminary Validation Results */}
         {currentStep === 5 && (
-          <div className="space-y-5">
-            <div>
-              <h2 className="text-base font-bold text-slate-900">
-                Step 5: Preliminary Scrutiny Validation
+          <div className="space-y-6">
+            <div className="border-b-2 border-[#17202B] pb-3">
+              <h2 className="text-base font-black text-[#142B45] uppercase tracking-wide">
+                Step 5: Preliminary Regulatory Scrutiny Validation
               </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                OCR and document-specific rules evaluate mandatory documents and statutory completeness. Automated checks do not establish authenticity or grant approval.
+              <p className="text-xs text-[#5B6875] mt-0.5">
+                Automated heuristic rule engines check mandatory completeness prior to officer queue assignment.
               </p>
             </div>
 
             {preliminaryResults ? (
               <div className="space-y-4">
                 <div
-                  className={`p-5 rounded-xl border ${
+                  className={`p-5 rounded-sm border-2 ${
                     preliminaryResults.passed
-                      ? 'bg-emerald-50 border-emerald-200 text-emerald-950'
-                      : 'bg-rose-50 border-rose-200 text-rose-950'
+                      ? 'bg-emerald-50 border-[#18794E] text-emerald-950 shadow-[2px_2px_0px_#18794E]'
+                      : 'bg-rose-50 border-rose-700 text-rose-950 shadow-[2px_2px_0px_#b91c1c]'
                   }`}
                 >
                   <div className="flex items-center space-x-3">
                     {preliminaryResults.passed ? (
-                      <CheckCircle2 className="w-7 h-7 text-emerald-600 flex-shrink-0" />
+                      <CheckCircle2 className="w-7 h-7 text-[#18794E] flex-shrink-0" />
                     ) : (
-                      <AlertCircle className="w-7 h-7 text-rose-600 flex-shrink-0" />
+                      <AlertCircle className="w-7 h-7 text-rose-700 flex-shrink-0" />
                     )}
                     <div>
-                      <h3 className="text-sm font-bold">
+                      <h3 className="text-sm font-black uppercase tracking-wide">
                         {preliminaryResults.passed
-                          ? 'Preliminary Checks Passed Successfully!'
-                          : 'Mandatory Compliance Checks Incomplete'}
+                          ? 'PRELIMINARY COMPLIANCE CHECKS SATISFIED'
+                          : 'MANDATORY COMPLIANCE DEFICIENCIES DETECTED'}
                       </h3>
-                      <p className="text-xs opacity-90 mt-0.5">
+                      <p className="text-xs opacity-90 mt-0.5 font-medium">
                         {preliminaryResults.passed
-                          ? 'All required category documents and statutory fields are validated. You may proceed to submit.'
-                          : 'Please rectify the following deficiencies before submitting to PRAVAH.'}
+                          ? 'All required statutory category documents and structural fields are validated. You may proceed to final dispatch.'
+                          : 'Rectify the flagged deficiency items below before submission to the statutory review desk.'}
                       </p>
                     </div>
                   </div>
                 </div>
 
                 {!preliminaryResults.passed && (
-                  <div className="bg-white p-4 rounded-xl border border-rose-200 space-y-2">
-                    <span className="text-xs font-bold text-rose-900">Required Rectifications:</span>
-                    <ul className="list-disc list-inside text-xs text-rose-800 space-y-1">
+                  <div className="bg-white p-4 rounded-sm border-2 border-rose-700 space-y-2 shadow-[2px_2px_0px_#b91c1c]">
+                    <span className="text-xs font-black uppercase tracking-wider text-rose-900">Action Required Prior to Submission:</span>
+                    <ul className="list-disc list-inside text-xs text-rose-900 space-y-1 font-mono">
                       {preliminaryResults.errors.map((err, i) => (
                         <li key={i}>{err}</li>
                       ))}
@@ -631,16 +639,16 @@ export const NewApplicationWizardPage: React.FC = () => {
                   </div>
                 )}
 
-                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600">
-                  <div className="font-semibold text-slate-800 mb-1">Human Authority Safeguard:</div>
-                  <p>
-                    PRAVAH's preliminary checks assist applicant institutions and scrutiny officers. Automated clearance does not grant autonomous approval; statutory evaluation remains under authorized committee authority.
+                <div className="p-4 bg-[#EAF0F5] rounded-sm border-2 border-[#17202B] text-xs text-[#17202B] shadow-[1px_1px_0px_#17202B]">
+                  <div className="font-black text-[#142B45] uppercase tracking-wide mb-1">Regulatory Safeguard Notice:</div>
+                  <p className="leading-relaxed">
+                    PRAVAH automated checks assist institutions and regional scrutiny officers in document verification. Automated clearance does not grant legal approval; statutory evaluation remains under authorized AICTE Scrutiny Committee authority.
                   </p>
                 </div>
               </div>
             ) : (
-              <div className="text-center py-8 text-xs text-slate-500">
-                Running automated validation checks...
+              <div className="text-center py-10 text-xs font-mono text-[#5B6875] border-2 border-dashed border-[#17202B]">
+                Executing preliminary regulatory validation pipeline...
               </div>
             )}
           </div>
@@ -648,43 +656,43 @@ export const NewApplicationWizardPage: React.FC = () => {
 
         {/* Step 6: Confirm & Submit */}
         {currentStep === 6 && (
-          <div className="space-y-5">
-            <div>
-              <h2 className="text-base font-bold text-slate-900">
-                Step 6: Preview Application & Submit to PRAVAH Queue
+          <div className="space-y-6">
+            <div className="border-b-2 border-[#17202B] pb-3">
+              <h2 className="text-base font-black text-[#142B45] uppercase tracking-wide">
+                Step 6: Dossier Preview & Final Submission to Scrutiny Desk
               </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-[#5B6875] mt-0.5">
                 Review the submission summary. Submission assigns your application to the active scrutiny queue.
               </p>
             </div>
 
-            <div className="p-5 bg-slate-50 rounded-xl border border-slate-200 space-y-3 text-xs">
+            <div className="p-5 bg-[#FAF9F6] rounded-sm border-2 border-[#17202B] space-y-4 text-xs shadow-[2px_2px_0px_#17202B]">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <span className="font-semibold text-slate-500">Institution:</span>
-                  <div className="font-bold text-slate-900">{currentUser?.institutionName}</div>
+                  <span className="font-mono text-[10px] uppercase font-bold text-[#5B6875]">Institution:</span>
+                  <div className="font-bold text-[#17202B]">{currentUser?.institutionName}</div>
                 </div>
                 <div>
-                  <span className="font-semibold text-slate-500">Regulatory Category:</span>
-                  <div className="font-bold text-slate-900">{category.replace(/_/g, ' ')}</div>
+                  <span className="font-mono text-[10px] uppercase font-bold text-[#5B6875]">Regulatory Category:</span>
+                  <div className="font-bold text-[#17202B]">{category.replace(/_/g, ' ')}</div>
                 </div>
                 <div>
-                  <span className="font-semibold text-slate-500">Academic Cycle:</span>
-                  <div className="font-bold text-slate-900">{academicCycle}</div>
+                  <span className="font-mono text-[10px] uppercase font-bold text-[#5B6875]">Academic Cycle:</span>
+                  <div className="font-bold font-mono text-[#17202B]">{academicCycle}</div>
                 </div>
                 <div>
-                  <span className="font-semibold text-slate-500">Requested Intake:</span>
-                  <div className="font-bold text-slate-900">{requestedIntake} seats</div>
+                  <span className="font-mono text-[10px] uppercase font-bold text-[#5B6875]">Requested Intake:</span>
+                  <div className="font-bold font-mono text-[#142B45]">{requestedIntake} SEATS</div>
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-slate-200">
-                <span className="font-semibold text-slate-500">Uploaded Document Files:</span>
-                <div className="mt-1 flex flex-wrap gap-1.5">
+              <div className="pt-3 border-t-2 border-[#17202B]">
+                <span className="font-mono text-[10px] uppercase font-bold text-[#5B6875]">Attached Statutory Documents:</span>
+                <div className="mt-2 flex flex-wrap gap-2">
                   {checklist
                     .filter((c) => c.isUploaded)
                     .map((c) => (
-                      <span key={c.documentType} className="px-2 py-0.5 bg-white border border-slate-200 rounded text-[11px] text-slate-700">
+                      <span key={c.documentType} className="px-2.5 py-1 bg-white border-2 border-[#17202B] rounded-sm text-[11px] font-mono font-bold text-[#17202B]">
                         {c.title}
                       </span>
                     ))}
@@ -692,22 +700,22 @@ export const NewApplicationWizardPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-900">
-              <div className="font-bold mb-1">Formal Submission Declaration:</div>
-              <p>
-                By clicking "Submit Application to PRAVAH", an official reference will be minted, and the application will be assigned to the AICTE Scrutiny Officer pool. You can track progress and deficiency notices directly from your dashboard.
+            <div className="p-4 bg-[#EAF0F5] border-2 border-[#17202B] rounded-sm text-xs text-[#142B45] shadow-[2px_2px_0px_#17202B]">
+              <div className="font-black uppercase tracking-wider mb-1">Formal Submission Declaration:</div>
+              <p className="leading-relaxed">
+                By clicking "Submit Application to PRAVAH", an official application reference number will be minted, and the application will be assigned to the AICTE Scrutiny Officer queue. You can monitor scrutiny progress, deficiency notices, and inspection schedules directly from your dashboard.
               </p>
             </div>
           </div>
         )}
 
         {/* Wizard Bottom Navigation Buttons */}
-        <div className="pt-6 border-t border-slate-200 flex justify-between items-center mt-6">
+        <div className="pt-6 border-t-2 border-[#17202B] flex justify-between items-center mt-6">
           <button
             type="button"
             onClick={() => setCurrentStep((p) => Math.max(p - 1, 1))}
             disabled={currentStep === 1 || isSaving || isSubmitting}
-            className="inline-flex items-center space-x-1.5 py-2 px-4 rounded-lg border border-slate-300 text-slate-700 text-xs font-bold hover:bg-slate-50 disabled:opacity-30 transition"
+            className="gov-btn-secondary py-2 px-4 text-xs disabled:opacity-30"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Previous Step</span>
@@ -718,9 +726,9 @@ export const NewApplicationWizardPage: React.FC = () => {
               type="button"
               onClick={handleNext}
               disabled={isSaving || (currentStep === 5 && !preliminaryResults?.passed)}
-              className="inline-flex items-center space-x-1.5 py-2 px-5 rounded-lg bg-gov-navy-950 text-white text-xs font-bold hover:bg-gov-navy-900 shadow-sm transition disabled:opacity-50"
+              className="gov-btn-primary py-2 px-5 text-xs disabled:opacity-50"
             >
-              <span>{isSaving ? 'Processing...' : 'Continue'}</span>
+              <span>{isSaving ? 'Processing...' : 'Continue to Next Step'}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           ) : (
@@ -728,7 +736,7 @@ export const NewApplicationWizardPage: React.FC = () => {
               type="button"
               onClick={handleFinalSubmit}
               disabled={Boolean(isSubmitting || (preliminaryResults && !preliminaryResults.passed))}
-              className="inline-flex items-center space-x-2 py-2.5 px-6 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md transition disabled:opacity-50"
+              className="gov-btn-saffron py-2.5 px-6 text-xs font-black shadow-[2px_2px_0px_#17202B] disabled:opacity-50"
             >
               <Send className="w-4 h-4" />
               <span>{isSubmitting ? 'Submitting to Queue...' : 'Submit Application to PRAVAH'}</span>

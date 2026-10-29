@@ -1,4 +1,6 @@
 import express, { Express, Request, Response } from 'express';
+import path from 'path';
+import fs from 'fs';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
@@ -39,7 +41,12 @@ export const createApp = (): Express => {
     cors({
       origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
         // Allow requests with no origin (e.g. mobile apps, curl, server-to-server) or matching allowed origins
-        if (!origin || configuredOrigins.includes(origin)) {
+        if (
+          !origin ||
+          configuredOrigins.includes(origin) ||
+          origin.endsWith('.onrender.com') ||
+          origin.endsWith('.vercel.app')
+        ) {
           callback(null, true);
         } else {
           callback(null, true); // Permissive in local dev, but credentials enabled
@@ -72,7 +79,19 @@ export const createApp = (): Express => {
   app.use('/api/rules', rulesRoutes);
   app.use('/api', operationalRoutes);
 
-  // 404 Handler
+  // Serve static client bundle if built (supports unified single-service Render deployment)
+  const clientDistPath = path.resolve(__dirname, '../../client/dist');
+  if (fs.existsSync(clientDistPath)) {
+    app.use(express.static(clientDistPath));
+    app.get('*', (req: Request, res: Response, next) => {
+      if (req.path.startsWith('/api')) {
+        return next();
+      }
+      res.sendFile(path.join(clientDistPath, 'index.html'));
+    });
+  }
+
+  // 404 Handler for API routes or unhandled requests
   app.use((req: Request, res: Response) => {
     res.status(404).json({
       success: false,

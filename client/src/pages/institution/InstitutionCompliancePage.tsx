@@ -62,80 +62,82 @@ export const InstitutionCompliancePage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-bold text-slate-900">Compliance & Undertakings</h1>
-        <p className="text-xs text-slate-500">
-          Statutory undertakings and condition verifications registered against institutional approvals
-        </p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white border-2 border-[#17202B] p-4 rounded-sm shadow-[2px_2px_0px_#17202B]">
+        <div>
+          <h1 className="text-xl font-black text-[#142B45] uppercase tracking-wide">Statutory Compliance & Legal Undertakings</h1>
+          <p className="text-xs text-[#5B6875] mt-0.5">
+            Conditional undertakings, time-bound NOC covenants, and legal verifications registered against AICTE institutional approvals
+          </p>
+        </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white border-2 border-[#17202B] rounded-sm shadow-[2px_2px_0px_#17202B] overflow-hidden">
         {isLoading ? (
-          <div className="p-8 text-center text-xs text-slate-500">Loading compliance records...</div>
+          <div className="p-10 text-center text-xs font-mono text-[#5B6875]">Accessing institutional statutory undertakings...</div>
         ) : items.length === 0 ? (
           <div className="p-12 text-center">
-            <ShieldCheck className="w-12 h-12 text-emerald-500 mx-auto mb-2" />
-            <h3 className="text-sm font-bold text-slate-800">No active undertakings</h3>
-            <p className="text-xs text-slate-500 mt-1">Your institution has zero outstanding regulatory conditions.</p>
+            <ShieldCheck className="w-12 h-12 text-[#18794E] mx-auto mb-2" />
+            <h3 className="text-sm font-black text-[#17202B] uppercase">Zero Outstanding Conditions</h3>
+            <p className="text-xs text-[#5B6875] mt-1 font-mono">Your institution currently maintains clean statutory standing with zero pending conditions.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+            <table className="admin-table">
+              <thead>
                 <tr>
-                  <th className="py-3 px-4">Undertaking Type</th>
-                  <th className="py-3 px-4">Application</th>
-                  <th className="py-3 px-4">Due Date</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4">Evidence Submitted</th>
-                  <th className="py-3 px-4 text-right">Action</th>
+                  <th>Undertaking Type & Description</th>
+                  <th>Application Ref</th>
+                  <th>Statutory Due Date</th>
+                  <th>Compliance Status</th>
+                  <th>Evidence Reference</th>
+                  <th className="text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody>
                 {items.map((item) => (
-                  <tr key={item.id} className="hover:bg-slate-50/80 transition">
-                    <td className="py-3.5 px-4 font-bold text-slate-900">
-                      <div>{item.undertakingType}</div>
-                      <div className="text-[11px] text-slate-500 font-normal mt-0.5 max-w-sm line-clamp-1">
+                  <tr key={item.id}>
+                    <td>
+                      <div className="font-black text-[#17202B] uppercase text-xs">{item.undertakingType}</div>
+                      <div className="text-[11px] text-[#5B6875] font-mono mt-0.5 max-w-sm line-clamp-1">
                         {item.description}
                       </div>
                     </td>
-                    <td className="py-3.5 px-4 font-mono font-bold text-gov-navy-950">
+                    <td className="font-mono font-black text-[#142B45]">
                       {item.applicationNumber}
                     </td>
-                    <td className="py-3.5 px-4">
-                      <div className="font-medium text-slate-900">
+                    <td>
+                      <div className="font-mono font-bold text-[#17202B]">
                         {new Date(item.dueDate).toLocaleDateString()}
                       </div>
                       {item.isOverdue && (
-                        <span className="text-[10px] font-bold text-rose-700 bg-rose-50 px-1.5 py-0.2 rounded border border-rose-200 mt-0.5 inline-block">
-                          Overdue ({item.daysRemaining} days)
+                        <span className="text-[10px] font-mono font-black text-rose-950 bg-rose-100 px-1.5 py-0.5 rounded-sm border border-rose-600 mt-1 inline-block uppercase">
+                          OVERDUE ({item.daysRemaining} DAYS)
                         </span>
                       )}
                     </td>
-                    <td className="py-3.5 px-4">
+                    <td>
                       {item.status === 'VERIFIED_SATISFACTORY' ? (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                        <span className="px-2 py-0.5 rounded-sm text-[10px] font-mono font-black border border-[#18794E] bg-emerald-100 text-emerald-950 uppercase">
                           Verified Satisfactory
                         </span>
                       ) : item.status === 'UNDER_REVIEW' ? (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800">
+                        <span className="px-2 py-0.5 rounded-sm text-[10px] font-mono font-black border border-[#142B45] bg-[#EAF0F5] text-[#142B45] uppercase">
                           Evidence Under Review
                         </span>
                       ) : (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+                        <span className="px-2 py-0.5 rounded-sm text-[10px] font-mono font-black border border-amber-600 bg-amber-100 text-amber-950 uppercase">
                           Pending Submission
                         </span>
                       )}
                     </td>
-                    <td className="py-3.5 px-4 text-slate-600 font-mono text-[11px]">
-                      {item.submittedDocumentRef || 'None'}
+                    <td className="text-[#5B6875] font-mono text-[11px]">
+                      {item.submittedDocumentRef || '—'}
                     </td>
-                    <td className="py-3.5 px-4 text-right">
+                    <td className="text-right">
                       <button
                         type="button"
                         onClick={() => handleOpenModal(item)}
-                        className="px-3 py-1.5 rounded-lg bg-gov-navy-950 text-white font-bold text-xs hover:bg-gov-navy-900 transition"
+                        className="gov-btn-primary py-1 px-3 text-xs font-bold"
                       >
                         {item.submittedDocumentRef ? 'Update Evidence' : 'Submit Evidence'}
                       </button>
@@ -150,35 +152,35 @@ export const InstitutionCompliancePage: React.FC = () => {
 
       {/* Submit Evidence Modal */}
       {activeItem && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
-            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-              <h3 className="text-sm font-bold text-slate-900">
+        <div className="fixed inset-0 z-50 bg-[#17202B]/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-sm max-w-md w-full p-6 shadow-[4px_4px_0px_#17202B] border-2 border-[#17202B] space-y-4">
+            <div className="flex justify-between items-center pb-2 border-b-2 border-[#17202B]">
+              <h3 className="text-sm font-black text-[#142B45] uppercase tracking-wide">
                 Submit Compliance Evidence
               </h3>
               <button
                 type="button"
                 onClick={() => setActiveItem(null)}
-                className="text-slate-400 hover:text-slate-600 p-1 rounded"
+                className="text-[#5B6875] hover:text-[#17202B] p-1 border border-transparent hover:border-[#17202B] rounded-sm"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {successMsg ? (
-              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-center space-y-2">
-                <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" />
-                <div className="text-xs font-bold text-emerald-900">{successMsg}</div>
+              <div className="p-4 bg-emerald-50 border-2 border-[#18794E] rounded-sm text-center space-y-2">
+                <CheckCircle2 className="w-8 h-8 text-[#18794E] mx-auto" />
+                <div className="text-xs font-black text-emerald-950 uppercase">{successMsg}</div>
               </div>
             ) : (
               <form onSubmit={handleSubmitEvidence} className="space-y-4">
-                <div className="p-3 bg-slate-50 rounded-lg text-xs border border-slate-200">
-                  <div className="font-bold text-slate-900">{activeItem.undertakingType}</div>
-                  <p className="text-slate-600 mt-0.5">{activeItem.description}</p>
+                <div className="p-3 bg-[#FAF9F6] rounded-sm text-xs border-2 border-[#17202B]">
+                  <div className="font-black text-[#17202B] uppercase">{activeItem.undertakingType}</div>
+                  <p className="text-[#5B6875] font-mono mt-1 text-[11px] leading-relaxed">{activeItem.description}</p>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-mono font-bold uppercase text-[#17202B] mb-1">
                     Document Filename / Verified Storage Reference *
                   </label>
                   <input
@@ -187,27 +189,27 @@ export const InstitutionCompliancePage: React.FC = () => {
                     value={documentRef}
                     onChange={(e) => setDocumentRef(e.target.value)}
                     placeholder="e.g. Fire_Safety_NOC_Renewal_2026.pdf"
-                    className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gov-navy-600"
+                    className="w-full px-3 py-2 text-xs bg-[#FAF9F6] border-2 border-[#17202B] rounded-sm text-[#17202B] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#142B45]"
                   />
-                  <p className="text-[11px] text-slate-500 mt-1">
+                  <p className="text-[10px] font-mono text-[#5B6875] mt-1">
                     Enter the name or reference of the registered certificate addressing this undertaking.
                   </p>
                 </div>
 
-                <div className="pt-2 flex justify-end space-x-2">
+                <div className="pt-2 flex justify-end space-x-2 border-t border-slate-300">
                   <button
                     type="button"
                     onClick={() => setActiveItem(null)}
-                    className="px-4 py-2 rounded-lg border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50"
+                    className="gov-btn-secondary py-1.5 px-4 text-xs font-bold"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmitting || !documentRef.trim()}
-                    className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-gov-navy-950 text-white text-xs font-bold hover:bg-gov-navy-900 disabled:opacity-50"
+                    className="gov-btn-primary py-1.5 px-4 text-xs font-bold disabled:opacity-50"
                   >
-                    <Send className="w-3.5 h-3.5" />
+                    <Send className="w-3.5 h-3.5 mr-1" />
                     <span>{isSubmitting ? 'Submitting...' : 'Commit Evidence'}</span>
                   </button>
                 </div>

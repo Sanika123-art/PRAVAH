@@ -173,6 +173,46 @@ export const PRESET_DEMO_INSTITUTION_USERS: PresetInstitutionUser[] = [
   },
 ];
 
+export function findPresetDemoUser(identifier: string): (
+  | (PresetOfficer & { institution?: null })
+  | (PresetInstitutionUser & { institution?: PresetInstitution | null })
+) | null {
+  const q = identifier.trim().toLowerCase();
+  const aliasMap: Record<string, string> = {
+    'ro.central@aicte.gov.in': 'neelesh.verma',
+    'cm.rao.evc@aicte.gov.in': 'cm.rao',
+    'member.secretary@aicte.gov.in': 'rajendra.prasad',
+    'sac.hearing@aicte.gov.in': 'bn.panda',
+    'director@apextech.ac.in': 'director.apex',
+    'principal@sahyadri.ac.in': 'principal.sahyadri',
+  };
+  const target = aliasMap[q] || q;
+  const prefix = target.includes('@') ? target.split('@')[0] : target;
+
+  const officer = PRESET_DEMO_OFFICERS.find(
+    (o) =>
+      o.username.toLowerCase() === target ||
+      o.email.toLowerCase() === target ||
+      o.username.toLowerCase() === prefix ||
+      o.id === target
+  );
+  if (officer) return { ...officer, institution: null };
+
+  const instUser = PRESET_DEMO_INSTITUTION_USERS.find(
+    (u) =>
+      u.username.toLowerCase() === target ||
+      u.email.toLowerCase() === target ||
+      u.username.toLowerCase() === prefix ||
+      u.id === target
+  );
+  if (instUser) {
+    const institution = PRESET_DEMO_INSTITUTIONS.find((i) => i.permanentInstituteId === instUser.institutionPid) || null;
+    return { ...instUser, institution };
+  }
+
+  return null;
+}
+
 /**
  * Initializes and verifies AICTE Officer & Institutional demo accounts in PostgreSQL.
  * Safe, repeatable, and non-destructive: only manages predefined demo accounts.

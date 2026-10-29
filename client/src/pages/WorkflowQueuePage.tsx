@@ -60,68 +60,74 @@ export const WorkflowQueuePage: React.FC = () => {
   return (
     <div className="space-y-6 animate-in fade-in duration-150">
       {noticeMessage && (
-        <div className="p-3 bg-amber-50 border border-amber-300 rounded text-amber-900 text-xs flex items-center justify-between shadow-sm animate-in fade-in">
-          <span>{noticeMessage}</span>
-          <button onClick={() => setNoticeMessage(null)} className="font-bold underline ml-3">Dismiss</button>
+        <div className="p-3.5 bg-amber-50 border-2 border-amber-700 rounded-sm text-amber-950 text-xs flex items-center justify-between shadow-[2px_2px_0px_#b45309]">
+          <span className="font-mono font-bold">{noticeMessage}</span>
+          <button onClick={() => setNoticeMessage(null)} className="font-bold underline ml-3 font-mono">Dismiss</button>
         </div>
       )}
 
       {/* SLA Policy Advisory */}
-      <div className="bg-[#0A1B38] text-white rounded-lg p-5 shadow-sm border border-gov-navy-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="bg-[#142B45] text-white rounded-sm p-5 shadow-[2px_2px_0px_#17202B] border-2 border-[#17202B] flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="space-y-1">
-          <div className="flex items-center space-x-2 text-amber-300 font-bold text-sm">
-            <Clock className="w-4 h-4 text-amber-400" />
+          <div className="flex items-center space-x-2 text-[#E98232] font-black text-sm uppercase tracking-wide">
+            <Clock className="w-4 h-4 text-[#E98232]" />
             <span>AICTE Statutory Scrutiny SLA: Strict 7 Business Days Turnaround</span>
           </div>
-          <p className="text-slate-200 text-xs leading-relaxed max-w-4xl">
+          <p className="text-slate-200 text-xs leading-relaxed max-w-4xl font-mono">
             Per the AICTE Approval Process Handbook (APH 2024–27 Chapter I & II), applications assigned to Scrutiny Committee experts must complete preliminary document verification within 7 days. Files with unresolved deficiencies are automatically flagged for Re-Scrutiny or Hearing (SHC).
           </p>
         </div>
-        <div className="px-4 py-2 bg-slate-900/90 rounded border border-amber-400/40 text-amber-300 font-mono font-bold text-xs whitespace-nowrap shadow-inner">
-          SLA Limit: 7 Days
+        <div className="px-3.5 py-1.5 bg-[#FAF9F6] text-[#142B45] border-2 border-[#17202B] rounded-sm font-mono font-black text-xs whitespace-nowrap shadow-[1px_1px_0px_#17202B]">
+          SLA LIMIT: 7 DAYS
         </div>
       </div>
 
-      {/* Queue Tabs with Official Government Styling */}
-      <div className="border-b-2 border-slate-300 flex space-x-3 bg-white px-4 pt-2 rounded-t-lg shadow-sm">
+      {/* Queue Tabs with Official Government Neo-Brutalist Styling */}
+      <div className="flex flex-wrap gap-2 border-b-2 border-[#17202B] pb-2">
         <button
           onClick={() => setActiveTab('SCRUTINY')}
-          className={`pb-3 px-4 text-xs font-bold border-b-2 -mb-[2px] transition flex items-center space-x-2 ${
+          className={`px-4 py-2 text-xs font-mono font-black uppercase rounded-sm border-2 transition flex items-center space-x-2 ${
             activeTab === 'SCRUTINY'
-              ? 'border-gov-navy-900 text-gov-navy-950 bg-slate-50 rounded-t'
-              : 'border-transparent text-slate-600 hover:text-slate-900'
+              ? 'bg-[#142B45] text-white border-[#17202B] shadow-[2px_2px_0px_#17202B]'
+              : 'bg-white text-[#17202B] border-[#17202B] hover:bg-[#FAF9F6]'
           }`}
         >
           <span>Primary Scrutiny Queue</span>
-          <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-900 text-[10px] font-bold">
+          <span className={`px-2 py-0.5 rounded-sm border text-[10px] font-mono ${
+            activeTab === 'SCRUTINY' ? 'bg-[#E98232] text-white border-white' : 'bg-[#EAF0F5] text-[#142B45] border-[#17202B]'
+          }`}>
             {scrutinyCount}
           </span>
         </button>
 
         <button
           onClick={() => setActiveTab('RE_SCRUTINY')}
-          className={`pb-3 px-4 text-xs font-bold border-b-2 -mb-[2px] transition flex items-center space-x-2 ${
+          className={`px-4 py-2 text-xs font-mono font-black uppercase rounded-sm border-2 transition flex items-center space-x-2 ${
             activeTab === 'RE_SCRUTINY'
-              ? 'border-gov-navy-900 text-gov-navy-950 bg-slate-50 rounded-t'
-              : 'border-transparent text-slate-600 hover:text-slate-900'
+              ? 'bg-[#142B45] text-white border-[#17202B] shadow-[2px_2px_0px_#17202B]'
+              : 'bg-white text-[#17202B] border-[#17202B] hover:bg-[#FAF9F6]'
           }`}
         >
           <span>Re-Scrutiny (Rectifications)</span>
-          <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[10px] font-bold">
+          <span className={`px-2 py-0.5 rounded-sm border text-[10px] font-mono ${
+            activeTab === 'RE_SCRUTINY' ? 'bg-[#E98232] text-white border-white' : 'bg-amber-100 text-amber-950 border-amber-600'
+          }`}>
             {reScrutinyCount}
           </span>
         </button>
 
         <button
           onClick={() => setActiveTab('EVC_TRANSITIONS')}
-          className={`pb-3 px-4 text-xs font-bold border-b-2 -mb-[2px] transition flex items-center space-x-2 ${
+          className={`px-4 py-2 text-xs font-mono font-black uppercase rounded-sm border-2 transition flex items-center space-x-2 ${
             activeTab === 'EVC_TRANSITIONS'
-              ? 'border-gov-navy-900 text-gov-navy-950 bg-slate-50 rounded-t'
-              : 'border-transparent text-slate-600 hover:text-slate-900'
+              ? 'bg-[#142B45] text-white border-[#17202B] shadow-[2px_2px_0px_#17202B]'
+              : 'bg-white text-[#17202B] border-[#17202B] hover:bg-[#FAF9F6]'
           }`}
         >
           <span>EVC Committee Transitions</span>
-          <span className="px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-900 text-[10px] font-bold">
+          <span className={`px-2 py-0.5 rounded-sm border text-[10px] font-mono ${
+            activeTab === 'EVC_TRANSITIONS' ? 'bg-[#E98232] text-white border-white' : 'bg-cyan-100 text-cyan-950 border-cyan-600'
+          }`}>
             {evcTransitionsCount}
           </span>
         </button>
@@ -140,30 +146,30 @@ export const WorkflowQueuePage: React.FC = () => {
               return (
                 <div
                   key={app.id}
-                  className={`bg-white rounded-lg border p-5 shadow-sm transition hover:shadow-md ${
-                    isOverdue ? 'border-rose-300 ring-2 ring-rose-200' : 'border-slate-200'
+                  className={`bg-white rounded-sm border-2 p-5 shadow-[2px_2px_0px_#17202B] transition ${
+                    isOverdue ? 'border-rose-700 bg-rose-50/30' : 'border-[#17202B]'
                   }`}
                 >
                   <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                     {/* Left: Application Identification & Institute Details */}
-                    <div className="space-y-1.5 flex-1 min-w-0">
+                    <div className="space-y-2 flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-mono text-xs font-bold text-gov-navy-950 bg-slate-100 px-2.5 py-1 rounded border border-slate-300">
+                        <span className="font-mono text-xs font-black text-[#142B45] bg-[#EAF0F5] px-2.5 py-1 rounded-sm border border-[#17202B]">
                           {app.applicationNumber}
                         </span>
-                        <span className="text-slate-300">|</span>
+                        <span className="text-slate-400">|</span>
                         <StageBadge stage={app.currentStage} />
                         <PriorityBadge priority={app.priority} />
                         {isOverdue && (
-                          <span className="px-2.5 py-0.5 rounded text-[11px] bg-rose-600 text-white font-extrabold animate-pulse">
-                            SLA Breached ({app.stageAgeingDays}d)
+                          <span className="px-2.5 py-0.5 rounded-sm border border-rose-800 text-[10px] font-mono font-black bg-rose-700 text-white uppercase">
+                            SLA BREACHED ({app.stageAgeingDays}D)
                           </span>
                         )}
                       </div>
 
-                      <h3 className="text-base font-extrabold text-slate-900">{app.instituteName}</h3>
+                      <h3 className="text-base font-black text-[#17202B] uppercase tracking-wide">{app.instituteName}</h3>
 
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600">
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#5B6875] font-mono">
                         <span><strong>Trust:</strong> {app.trustName}</span>
                         <span>•</span>
                         <span><strong>Category:</strong> {app.category.replace(/_/g, ' ')}</span>
@@ -175,15 +181,15 @@ export const WorkflowQueuePage: React.FC = () => {
                     </div>
 
                     {/* Middle: Ageing & Officer Assignment */}
-                    <div className="flex items-center space-x-6 text-xs bg-slate-50 p-3 rounded-lg border border-slate-200 flex-shrink-0">
+                    <div className="flex items-center space-x-6 text-xs bg-[#FAF9F6] p-3 rounded-sm border-2 border-[#17202B] flex-shrink-0 font-mono">
                       <div>
-                        <span className="text-slate-500 block text-[11px]">Assigned Officer</span>
-                        <span className="font-bold text-gov-navy-950">{app.assignedOfficer}</span>
+                        <span className="text-[#5B6875] block text-[10px] uppercase font-bold">Assigned Officer</span>
+                        <span className="font-bold text-[#142B45]">{app.assignedOfficer}</span>
                       </div>
                       <div>
-                        <span className="text-slate-500 block text-[11px]">Desk Ageing</span>
-                        <span className={`font-mono text-sm font-bold ${isOverdue ? 'text-rose-600' : 'text-slate-900'}`}>
-                          {app.stageAgeingDays} Days
+                        <span className="text-[#5B6875] block text-[10px] uppercase font-bold">Desk Ageing</span>
+                        <span className={`font-mono text-sm font-black ${isOverdue ? 'text-rose-700' : 'text-[#17202B]'}`}>
+                          {app.stageAgeingDays} DAYS
                         </span>
                         <span className="text-[10px] text-slate-400 block">Total: {app.totalAgeingDays}d</span>
                       </div>
@@ -193,24 +199,26 @@ export const WorkflowQueuePage: React.FC = () => {
                     <div className="flex items-center space-x-2 flex-shrink-0">
                       <button
                         onClick={() => setSelectedApplication(app)}
-                        className="px-3.5 py-2 border border-slate-300 rounded text-xs text-slate-700 hover:bg-slate-50 font-bold"
+                        className="gov-btn-secondary py-2 px-3.5 text-xs font-bold"
                       >
                         Inspect Docket
                       </button>
                       {(app.currentStage === 'SUBMITTED' || app.currentStage === 'SCRUTINY') && (
                         <button
                           onClick={() => setEvaluatingApplication(app)}
-                          className="px-4 py-2 bg-gov-navy-900 text-white hover:bg-gov-navy-800 rounded text-xs font-bold flex items-center gap-1.5 shadow-sm"
+                          className="gov-btn-primary py-2 px-4 text-xs font-bold flex items-center gap-1.5"
                         >
-                          <FileCheck className="w-4 h-4 text-amber-300" /> {app.currentStage === 'SUBMITTED' ? 'Start Scrutiny' : 'Open Scrutiny'}
+                          <FileCheck className="w-4 h-4 text-[#E98232]" />
+                          <span>{app.currentStage === 'SUBMITTED' ? 'Start Scrutiny' : 'Open Scrutiny'}</span>
                         </button>
                       )}
                       {app.currentStage === 'RE_SCRUTINY' && (
                         <button
                           onClick={() => setEvaluatingApplication(app)}
-                          className="px-4 py-2 bg-amber-600 text-white hover:bg-amber-700 rounded text-xs font-bold flex items-center gap-1.5 shadow-sm"
+                          className="gov-btn-saffron py-2 px-4 text-xs font-black shadow-[2px_2px_0px_#17202B] flex items-center gap-1.5"
                         >
-                          <CheckCircle className="w-4 h-4" /> Verify Rectifications
+                          <CheckCircle className="w-4 h-4" />
+                          <span>Verify Rectifications</span>
                         </button>
                       )}
                     </div>
@@ -218,14 +226,14 @@ export const WorkflowQueuePage: React.FC = () => {
 
                   {/* Deficiency Notice Bar if Flagged */}
                   {app.isDeficient && (
-                    <div className="mt-3.5 pt-3 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs bg-rose-50 p-3 rounded-md border border-rose-200">
-                      <div className="flex items-center space-x-2 text-rose-800 font-semibold">
-                        <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+                    <div className="mt-3.5 pt-3 border-t-2 border-[#17202B] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs bg-rose-50 p-3 rounded-sm border-2 border-rose-700 shadow-[1px_1px_0px_#b91c1c]">
+                      <div className="flex items-center space-x-2 text-rose-950 font-bold font-mono">
+                        <AlertCircle className="w-4 h-4 text-rose-700 flex-shrink-0" />
                         <span>{app.deficiencyCount} deficiency item(s) recorded under faculty cadre / municipal NOC. Rectification window active under APH norms.</span>
                       </div>
                       <button
                         onClick={() => handleActionClick('Forward to SHC Bench', app.applicationNumber)}
-                        className="font-bold text-rose-900 hover:underline flex items-center gap-1 whitespace-nowrap self-start sm:self-auto"
+                        className="font-bold text-rose-900 hover:underline flex items-center gap-1 whitespace-nowrap self-start sm:self-auto font-mono uppercase"
                       >
                         Forward to Hearing (SHC) &rarr;
                       </button>

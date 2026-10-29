@@ -6,9 +6,9 @@ interface GeometricMarkProps {
 }
 
 /**
- * Custom neutral geometric identity mark for PRAVAH.
- * Represents precision scrutiny, institutional stability, and structural compliance.
- * Original design that avoids copying any state emblem or copyrighted logo.
+ * Neo-Brutalist Government Identity Mark for PRAVAH.
+ * Represents precision statutory scrutiny, institutional governance, and workflow integrity.
+ * Strictly original design avoiding state emblem copyright issues.
  */
 export const GeometricMark: React.FC<GeometricMarkProps> = ({ className = '', size = 32 }) => {
   return (
@@ -18,31 +18,37 @@ export const GeometricMark: React.FC<GeometricMarkProps> = ({ className = '', si
       viewBox="0 0 40 40"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={className}
-      aria-label="PRAVAH Identity Mark"
+      className={`flex-shrink-0 ${className}`}
+      aria-label="PRAVAH Structural Mark"
     >
-      {/* Outer structural hexagon */}
-      <polygon
-        points="20,2 36,11 36,29 20,38 4,29 4,11"
-        fill="#0A1B38"
-        stroke="#1E3A8A"
-        strokeWidth="1.5"
-      />
-      
-      {/* Inner verification chevron & compass geometry */}
-      <path
-        d="M20 7L31 13.5V26.5L20 33L9 26.5V13.5L20 7Z"
-        stroke="#F59E0B"
-        strokeWidth="1.75"
-        strokeLinejoin="round"
+      {/* Outer crisp rectangular-shield outline with 2px stroke */}
+      <rect
+        x="3"
+        y="3"
+        width="34"
+        height="34"
+        rx="2"
+        fill="#142B45"
+        stroke="#17202B"
+        strokeWidth="2"
       />
 
-      {/* Center compliance precision dot / pillar */}
-      <circle cx="20" cy="20" r="3.5" fill="#10B981" />
-      <line x1="20" y1="11" x2="20" y2="15" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="20" y1="25" x2="20" y2="29" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="12" y1="20" x2="15.5" y2="20" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="24.5" y1="20" x2="28" y2="20" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" />
+      {/* Internal geometric diamond & grid */}
+      <polygon
+        points="20,7 33,20 20,33 7,20"
+        fill="#0A1B38"
+        stroke="#E98232"
+        strokeWidth="1.5"
+      />
+
+      {/* Central India green statutory verification node */}
+      <rect x="17" y="17" width="6" height="6" fill="#18794E" stroke="#FAF9F6" strokeWidth="1" />
+
+      {/* Four directional precision crosshairs */}
+      <line x1="20" y1="9" x2="20" y2="14" stroke="#FAF9F6" strokeWidth="1.5" />
+      <line x1="20" y1="26" x2="20" y2="31" stroke="#FAF9F6" strokeWidth="1.5" />
+      <line x1="9" y1="20" x2="14" y2="20" stroke="#FAF9F6" strokeWidth="1.5" />
+      <line x1="26" y1="20" x2="31" y2="20" stroke="#FAF9F6" strokeWidth="1.5" />
     </svg>
   );
 };

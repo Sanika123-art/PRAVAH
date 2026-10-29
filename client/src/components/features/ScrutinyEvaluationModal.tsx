@@ -19,17 +19,17 @@ interface ScrutinyEvaluationModalProps {
 }
 
 const severityStyles: Record<ScrutinyFinding['severity'], string> = {
-  CRITICAL: 'border-rose-300 bg-rose-50 text-rose-900',
-  HIGH: 'border-orange-300 bg-orange-50 text-orange-900',
-  MEDIUM: 'border-amber-300 bg-amber-50 text-amber-900',
-  LOW: 'border-slate-300 bg-slate-50 text-slate-700',
+  CRITICAL: 'border-2 border-[#C5221F] bg-[#FDF2F2] text-[#C5221F] font-bold shadow-[1px_1px_0px_#C5221F]',
+  HIGH: 'border-2 border-[#B45309] bg-[#FFF7ED] text-[#B45309] font-bold shadow-[1px_1px_0px_#B45309]',
+  MEDIUM: 'border-2 border-[#D97706] bg-[#FEF3C7] text-[#92400E] font-bold shadow-[1px_1px_0px_#D97706]',
+  LOW: 'border-2 border-[#17202B] bg-[#FAF9F6] text-[#17202B] font-bold shadow-[1px_1px_0px_#17202B]',
 };
 
 const findingStateLabel: Record<ScrutinyFinding['reviewState'], string> = {
-  PENDING: 'Pending',
-  CONFIRMED: 'Confirmed',
-  DISMISSED: 'Dismissed',
-  RESOLVED: 'Resolved',
+  PENDING: 'Pending Scrutiny',
+  CONFIRMED: 'Confirmed Deficiency',
+  DISMISSED: 'Dismissed as False Positive',
+  RESOLVED: 'Resolved Satisfactorily',
 };
 
 const fileUrl = (applicationId: string, documentId: string) =>
@@ -159,26 +159,61 @@ export const ScrutinyEvaluationModal: React.FC<ScrutinyEvaluationModalProps> = (
     setIds(ids.includes(id) ? ids.filter((item) => item !== id) : [...ids, id]);
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6">
-      <section role="dialog" aria-modal="true" aria-labelledby="scrutiny-title" className="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[94vh] flex flex-col border border-slate-200">
-        <header className="bg-[#0A1B38] text-white p-5 flex items-start justify-between rounded-t-xl">
+    <div className="fixed inset-0 z-50 bg-slate-950/60 flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="scrutiny-title"
+        className="bg-white rounded-sm shadow-[4px_4px_0px_#17202B] w-full max-w-6xl max-h-[94vh] flex flex-col border-2 border-[#17202B]"
+      >
+        <header className="bg-[#142B45] text-white p-5 flex items-start justify-between border-b-2 border-[#17202B]">
           <div>
-            <div className="flex gap-2 items-center text-[11px] uppercase tracking-wider font-bold text-amber-300">
-              <FileCheck className="w-4 h-4" /> Officer Scrutiny Workbench
-              {application.isDemo && <span className="rounded bg-amber-200 px-2 py-0.5 text-amber-950">DEMO · READ ONLY</span>}
+            <div className="flex gap-2 items-center text-[10px] uppercase tracking-wider font-mono font-bold text-[#E98232]">
+              <FileCheck className="w-4 h-4 text-[#E98232]" />
+              <span>REGULATORY SCRUTINY WORKBENCH • AICTE APH 2024–27</span>
+              {application.isDemo && (
+                <span className="rounded-sm bg-[#E98232] text-white px-2 py-0.2 border border-[#17202B] font-bold">
+                  DEMO SPECIMEN
+                </span>
+              )}
             </div>
-            <h2 id="scrutiny-title" className="mt-1 text-lg font-extrabold">{application.instituteName}</h2>
-            <p className="text-xs text-slate-300 font-mono">{application.applicationNumber} · PID {application.permanentInstituteId} · {application.region.replace(/_/g, ' ')}</p>
+            <h2 id="scrutiny-title" className="mt-1 text-lg font-black tracking-tight text-white leading-tight">
+              {application.instituteName}
+            </h2>
+            <p className="text-xs text-slate-300 font-mono mt-0.5">
+              APP: <span className="text-white font-bold">{application.applicationNumber}</span> • PID: <span className="text-[#E98232] font-bold">{application.permanentInstituteId}</span> • Scope: {application.region.replace(/_/g, ' ')}
+            </p>
           </div>
-          <button onClick={onClose} aria-label="Close scrutiny workbench" className="p-1 text-slate-300 hover:text-white"><X className="w-5 h-5" /></button>
+          <button
+            onClick={onClose}
+            aria-label="Close scrutiny workbench"
+            className="p-1.5 text-white border border-white/40 rounded-sm hover:bg-[#0A1B38] hover:border-white transition"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-5 space-y-5 text-xs">
-          {error && <div role="alert" className="rounded border border-rose-200 bg-rose-50 p-3 text-rose-800">{error}</div>}
-          {success && <div className="rounded border border-emerald-200 bg-emerald-50 p-3 text-emerald-800">{success}</div>}
-          {!workbench && !error ? <div className="p-10 text-center text-slate-500"><Clock className="w-5 h-5 animate-spin inline mr-2" />Loading actual application data...</div> : null}
+        <main className="flex-1 overflow-y-auto p-5 space-y-5 text-xs bg-[#FAF9F6]">
+          {error && (
+            <div role="alert" className="rounded-sm border-2 border-[#C5221F] bg-[#FDF2F2] p-3 text-[#C5221F] font-bold shadow-[2px_2px_0px_#C5221F]">
+              {error}
+            </div>
+          )}
+          {success && (
+            <div className="rounded-sm border-2 border-[#18794E] bg-[#EBF6F0] p-3 text-[#13603E] font-bold shadow-[2px_2px_0px_#18794E]">
+              {success}
+            </div>
+          )}
+          {!workbench && !error ? (
+            <div className="p-10 text-center text-[#5B6875] font-bold font-mono">
+              <Clock className="w-5 h-5 animate-spin inline mr-2 text-[#142B45]" />
+              Querying actual application data from PostgreSQL...
+            </div>
+          ) : null}
+
           {workbench && (
             <>
+              {/* Institution Metadata Grid */}
               <section className="grid grid-cols-2 md:grid-cols-4 gap-2">
                 {[
                   ['Trust / Society', application.trustName],
@@ -190,105 +225,417 @@ export const ScrutinyEvaluationModal: React.FC<ScrutinyEvaluationModalProps> = (
                   ['Stage / application age', `${application.stageAgeingDays} / ${application.totalAgeingDays} days`],
                   ['Submitted', new Date(application.submissionDate).toLocaleDateString()],
                 ].map(([label, value]) => (
-                  <div key={label} className="p-3 rounded border border-slate-200 bg-slate-50">
-                    <div className="text-[10px] uppercase text-slate-500">{label}</div><div className="mt-1 font-bold text-slate-900">{value || 'Not recorded'}</div>
+                  <div key={label} className="p-2.5 rounded-sm border border-[#17202B] bg-white shadow-[1px_1px_0px_#17202B]">
+                    <div className="text-[10px] font-black uppercase text-[#5B6875]">{label}</div>
+                    <div className="mt-0.5 font-bold text-[#17202B] truncate">{value || 'Not recorded'}</div>
                   </div>
                 ))}
               </section>
 
-              <section className="rounded-lg border border-slate-200 overflow-hidden">
-                <div className="p-3 bg-slate-50 border-b flex items-center justify-between">
-                  <div><h3 className="font-bold text-slate-900">Application documents ({documents.length})</h3><p className="text-[10px] text-slate-500">OCR and deterministic rules assist review; they do not establish authenticity.</p></div>
-                  <button disabled={busy || application.isDemo} onClick={runAnalysis} className="inline-flex gap-1.5 items-center px-3 py-1.5 rounded bg-gov-navy-900 text-white font-bold disabled:opacity-50">
-                    {busy ? <Clock className="w-3.5 h-3.5 animate-spin" /> : <RotateCcw className="w-3.5 h-3.5" />} Analyze / re-run
+              {/* Application Documents Section */}
+              <section className="rounded-sm border-2 border-[#17202B] bg-white shadow-[2px_2px_0px_#17202B] overflow-hidden">
+                <div className="p-3 bg-[#EAF0F5] border-b-2 border-[#17202B] flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <h3 className="font-black text-[#142B45] text-xs uppercase tracking-wider">
+                      Application Documents ({documents.length})
+                    </h3>
+                    <p className="text-[10px] text-[#5B6875] font-medium">
+                      OCR and deterministic rules assist review; regulatory officers retain statutory decision authority.
+                    </p>
+                  </div>
+                  <button
+                    disabled={busy || application.isDemo}
+                    onClick={runAnalysis}
+                    className="inline-flex gap-1.5 items-center px-3 py-1.5 rounded-sm bg-[#142B45] text-white border border-[#17202B] font-bold uppercase tracking-wider text-[11px] hover:bg-[#0A1B38] shadow-[1px_1px_0px_#17202B] disabled:opacity-50 transition"
+                  >
+                    {busy ? <Clock className="w-3.5 h-3.5 animate-spin" /> : <RotateCcw className="w-3.5 h-3.5" />}
+                    <span>Run Verification Rules</span>
                   </button>
                 </div>
-                {documents.length === 0 ? <p className="p-4 text-slate-500">No documents are uploaded.</p> : (
-                  <div className="divide-y divide-slate-100">
+                {documents.length === 0 ? (
+                  <p className="p-4 text-[#5B6875] italic">No documents are uploaded for this application.</p>
+                ) : (
+                  <div className="divide-y divide-[#CBD5E1]">
                     {documents.map((doc) => (
-                      <div key={doc.id} className="p-3 flex flex-wrap items-center justify-between gap-2">
+                      <div key={doc.id} className="p-3 flex flex-wrap items-center justify-between gap-2 hover:bg-[#FAF9F6]">
                         <div>
-                          <div className="font-bold text-slate-900">{doc.title} <span className="font-mono text-[10px] text-slate-500">· {doc.documentType.replace(/_/g, ' ')}</span></div>
-                          <div className="mt-1 text-[10px] text-slate-500">OCR: {doc.ocrMethod || 'Not recorded'} · confidence: {doc.ocrConfidence === null || doc.ocrConfidence === undefined ? 'Unavailable' : `${doc.ocrConfidence.toFixed(1)}%`} · rule result: <strong>{doc.verificationStatus}</strong>{doc.detectedDocumentType ? ` · detected ${doc.detectedDocumentType.replace(/_/g, ' ')}` : ''}</div>
-                          {doc.verificationExplanation && <p className="mt-1 text-[10px] text-slate-600">{doc.verificationExplanation}</p>}
+                          <div className="font-bold text-[#17202B] text-xs">
+                            {doc.title}{' '}
+                            <span className="font-mono text-[10px] text-[#5B6875] bg-[#EAF0F5] px-1 py-0.2 border border-[#CBD5E1] ml-1">
+                              {doc.documentType.replace(/_/g, ' ')}
+                            </span>
+                          </div>
+                          <div className="mt-1 text-[11px] text-[#5B6875] font-mono">
+                            OCR: {doc.ocrMethod || 'Manual'} • Confidence:{' '}
+                            {doc.ocrConfidence === null || doc.ocrConfidence === undefined
+                              ? 'N/A'
+                              : `${doc.ocrConfidence.toFixed(1)}%`}{' '}
+                            • Rule Status: <strong className="text-[#142B45]">{doc.verificationStatus}</strong>
+                            {doc.detectedDocumentType ? ` • Detected: ${doc.detectedDocumentType.replace(/_/g, ' ')}` : ''}
+                          </div>
+                          {doc.verificationExplanation && (
+                            <p className="mt-1 text-[11px] text-[#17202B] font-medium">{doc.verificationExplanation}</p>
+                          )}
                         </div>
-                        <a href={fileUrl(application.id, doc.id)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded border border-slate-300 px-2.5 py-1.5 font-semibold hover:bg-slate-50"><ExternalLink className="w-3.5 h-3.5" /> Open original</a>
+                        <a
+                          href={fileUrl(application.id, doc.id)}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 rounded-sm border border-[#17202B] bg-white px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-[#142B45] hover:bg-[#EAF0F5] shadow-[1px_1px_0px_#17202B]"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5 text-[#E98232]" /> Open Source Document
+                        </a>
                       </div>
                     ))}
                   </div>
                 )}
               </section>
 
-              <section className="rounded-lg border border-slate-200 overflow-hidden">
-                <div className="p-3 bg-slate-50 border-b"><h3 className="font-bold text-slate-900">Field comparisons</h3><p className="text-[10px] text-slate-500">Unextracted values are unknown, not assumed to be absent. Fuzzy differences never auto-pass.</p></div>
-                {workbench.comparisons.length ? <div className="overflow-x-auto"><table className="w-full min-w-[700px] text-left">
-                  <thead className="bg-white text-[10px] uppercase text-slate-500"><tr><th className="p-2">Document / field</th><th className="p-2">Application value</th><th className="p-2">OCR value</th><th className="p-2">Comparison</th></tr></thead>
-                  <tbody>{workbench.comparisons.map((comparison: ScrutinyComparison) => (
-                    <tr key={`${comparison.documentId}-${comparison.fieldName}`} className="border-t border-slate-100 align-top">
-                      <td className="p-2"><div className="font-semibold">{comparison.label}</div><div className="text-[10px] text-slate-500">{comparison.documentType.replace(/_/g, ' ')}</div></td>
-                      <td className="p-2">{comparison.applicationValue || 'Not provided'}</td><td className="p-2">{comparison.documentValue || 'Not extracted'}</td>
-                      <td className="p-2"><span className={`font-bold ${comparison.result.includes('MATCH') ? 'text-emerald-700' : comparison.result === 'CONFLICT' ? 'text-rose-700' : comparison.result === 'NOT_EXTRACTED' ? 'text-amber-700' : 'text-slate-600'}`}>{comparison.result.replace(/_/g, ' ')}</span><div className="mt-0.5 text-[10px] text-slate-600">{comparison.explanation}</div></td>
-                    </tr>
-                  ))}</tbody>
-                </table></div> : <p className="p-4 text-slate-500">No configured application fields could be compared yet.</p>}
+              {/* Field Comparisons Table */}
+              <section className="rounded-sm border-2 border-[#17202B] bg-white shadow-[2px_2px_0px_#17202B] overflow-hidden">
+                <div className="p-3 bg-[#EAF0F5] border-b-2 border-[#17202B]">
+                  <h3 className="font-black text-[#142B45] text-xs uppercase tracking-wider">
+                    Extracted Field Regulatory Cross-Checks
+                  </h3>
+                  <p className="text-[10px] text-[#5B6875]">
+                    Unextracted values are flagged as pending officer inspection. Discrepancies require explicit review note.
+                  </p>
+                </div>
+                {workbench.comparisons.length ? (
+                  <div className="overflow-x-auto">
+                    <table className="admin-table">
+                      <thead>
+                        <tr>
+                          <th>Document / Parameter</th>
+                          <th>Application Declared</th>
+                          <th>OCR Extracted</th>
+                          <th>Scrutiny Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {workbench.comparisons.map((comparison: ScrutinyComparison) => (
+                          <tr key={`${comparison.documentId}-${comparison.fieldName}`}>
+                            <td>
+                              <div className="font-bold text-[#142B45]">{comparison.label}</div>
+                              <div className="text-[10px] text-[#5B6875] font-mono">{comparison.documentType.replace(/_/g, ' ')}</div>
+                            </td>
+                            <td className="font-mono font-bold text-[#17202B]">{comparison.applicationValue || 'Not declared'}</td>
+                            <td className="font-mono font-bold text-[#17202B]">{comparison.documentValue || 'Not extracted'}</td>
+                            <td>
+                              <span
+                                className={`inline-block px-1.5 py-0.5 rounded-sm border text-[10px] font-black uppercase font-mono ${
+                                  comparison.result.includes('MATCH')
+                                    ? 'bg-[#EBF6F0] text-[#13603E] border-[#18794E]'
+                                    : comparison.result === 'CONFLICT'
+                                    ? 'bg-[#FDF2F2] text-[#C5221F] border-[#C5221F]'
+                                    : comparison.result === 'NOT_EXTRACTED'
+                                    ? 'bg-[#FFF7ED] text-[#B45309] border-[#B45309]'
+                                    : 'bg-[#FAF9F6] text-[#5B6875] border-[#CBD5E1]'
+                                }`}
+                              >
+                                {comparison.result.replace(/_/g, ' ')}
+                              </span>
+                              <div className="mt-0.5 text-[11px] text-[#5B6875] leading-snug">{comparison.explanation}</div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="p-4 text-[#5B6875] italic">No cross-field comparisons available for this file.</p>
+                )}
               </section>
 
-              <section className="space-y-2">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div><h3 className="font-bold text-slate-900">Current findings ({findings.length})</h3><p className="text-[10px] text-slate-500">Open a finding to inspect its evidence and record an officer review.</p></div>
-                  <span className="text-[10px] text-slate-600">Blocking unresolved: <strong>{blocking.length}</strong></span>
+              {/* Findings & Officer Decisions */}
+              <section className="space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-[#17202B] pb-1">
+                  <div>
+                    <h3 className="font-black text-[#142B45] text-xs uppercase tracking-wider">
+                      Regulatory Scrutiny Findings ({findings.length})
+                    </h3>
+                    <p className="text-[10px] text-[#5B6875]">Select a discrepancy below to record officer evaluation.</p>
+                  </div>
+                  <span className="text-xs font-mono font-bold text-[#C5221F] bg-[#FDF2F2] border border-[#C5221F] px-2 py-0.5 rounded-sm">
+                    BLOCKING UNRESOLVED: {blocking.length}
+                  </span>
                 </div>
-                {!workbench.latestRun ? <p className="rounded border border-dashed border-slate-300 p-4 text-slate-600">No scrutiny run exists. Run OCR/rule analysis before recording a decision.</p> : findings.length === 0 ? <p className="rounded border border-emerald-200 bg-emerald-50 p-4 text-emerald-800">No automated discrepancies were generated. Officers must still complete their independent review.</p> : (
-                  <div className="space-y-2">{findings.map((finding) => (
-                    <button key={finding.id} type="button" onClick={() => { setSelectedFinding(finding); setReviewNote(finding.officerNotes || ''); setError(null); }} className={`w-full text-left rounded-lg border p-3 ${severityStyles[finding.severity]} ${selectedFinding?.id === finding.id ? 'ring-2 ring-blue-500' : ''}`}>
-                      <div className="flex flex-wrap justify-between gap-2"><strong>{finding.severity} · {finding.fieldName}</strong><span>{findingStateLabel[finding.reviewState]}</span></div>
-                      <div className="mt-1">{finding.reason}</div>
-                      {finding.applicationValue && <div className="mt-1 text-[10px]">Application: “{finding.applicationValue}” · Document: “{finding.documentValue || 'Not extracted'}”</div>}
-                    </button>
-                  ))}</div>
+
+                {!workbench.latestRun ? (
+                  <p className="rounded-sm border-2 border-dashed border-[#17202B] p-4 text-[#5B6875] font-medium">
+                    No scrutiny run exists. Execute verification rules before entering regulatory decision.
+                  </p>
+                ) : findings.length === 0 ? (
+                  <p className="rounded-sm border-2 border-[#18794E] bg-[#EBF6F0] p-4 text-[#13603E] font-bold shadow-[2px_2px_0px_#18794E]">
+                    No discrepancies detected by automated rules. Complete manual scrutiny verification below.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {findings.map((finding) => (
+                      <button
+                        key={finding.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedFinding(finding);
+                          setReviewNote(finding.officerNotes || '');
+                          setError(null);
+                        }}
+                        className={`w-full text-left rounded-sm p-3 transition border-2 ${
+                          severityStyles[finding.severity]
+                        } ${selectedFinding?.id === finding.id ? 'ring-2 ring-[#142B45] border-[#142B45]' : ''}`}
+                      >
+                        <div className="flex flex-wrap justify-between gap-2">
+                          <strong className="uppercase font-mono text-[11px]">
+                            [{finding.severity}] {finding.fieldName}
+                          </strong>
+                          <span className="font-mono text-[10px] uppercase bg-white/80 px-1.5 py-0.2 rounded-sm border border-current">
+                            {findingStateLabel[finding.reviewState]}
+                          </span>
+                        </div>
+                        <div className="mt-1 font-medium text-xs">{finding.reason}</div>
+                        {finding.applicationValue && (
+                          <div className="mt-1 text-[10px] font-mono opacity-90">
+                            Declared: &ldquo;{finding.applicationValue}&rdquo; • Extracted: &ldquo;
+                            {finding.documentValue || 'Not extracted'}&rdquo;
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
                 )}
+
+                {/* Finding Detail Inspection Drawer Box */}
                 {selectedFinding && (
-                  <div className="rounded-lg border border-blue-200 bg-blue-50/50 p-4 space-y-3">
-                    <div className="flex justify-between gap-2"><strong className="text-slate-900">Finding detail · {selectedFinding.findingType.replace(/_/g, ' ')}</strong><button onClick={() => setSelectedFinding(null)} aria-label="Close finding detail"><X className="w-4 h-4" /></button></div>
-                    {selectedFinding.documentId && <a href={fileUrl(application.id, selectedFinding.documentId)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-blue-800 underline"><ExternalLink className="w-3.5 h-3.5" /> Open associated original document {selectedFinding.evidencePage ? `(page ${selectedFinding.evidencePage})` : ''}</a>}
-                    {selectedFinding.evidence && <blockquote className="border-l-2 border-blue-400 bg-white p-2 text-slate-700"><div className="text-[10px] font-bold text-slate-500">OCR excerpt{selectedFinding.evidencePage ? ` · page ${selectedFinding.evidencePage}` : ''}{selectedFinding.ocrConfidence !== null ? ` · ${selectedFinding.ocrConfidence.toFixed(1)}% confidence` : ''}</div>{selectedFinding.evidence}</blockquote>}
-                    <div className="grid sm:grid-cols-2 gap-2"><div className="bg-white p-2 rounded border">Application value: <strong>{selectedFinding.applicationValue || 'Not applicable / unavailable'}</strong></div><div className="bg-white p-2 rounded border">Document value: <strong>{selectedFinding.documentValue || 'Not extracted'}</strong></div></div>
-                    <p className="text-slate-700">Recommended action: {selectedFinding.recommendedAction}</p>
-                    <label className="block font-semibold">Officer note (required, at least 5 characters)
-                      <textarea rows={2} value={reviewNote} onChange={(event) => setReviewNote(event.target.value)} className="mt-1 block w-full rounded border border-slate-300 bg-white p-2 font-normal" />
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      <button disabled={busy} onClick={() => saveFindingReview('CONFIRMED')} className="px-3 py-1.5 rounded bg-orange-700 text-white font-bold disabled:opacity-50">Confirm finding</button>
-                      <button disabled={busy} onClick={() => saveFindingReview('DISMISSED')} className="px-3 py-1.5 rounded bg-slate-700 text-white font-bold disabled:opacity-50">Dismiss as false positive</button>
-                      <button disabled={busy} onClick={() => saveFindingReview('RESOLVED')} className="px-3 py-1.5 rounded bg-emerald-700 text-white font-bold disabled:opacity-50">Mark resolved</button>
+                  <div className="rounded-sm border-2 border-[#142B45] bg-[#EAF0F5] p-4 space-y-3 shadow-[2px_2px_0px_#142B45]">
+                    <div className="flex justify-between items-start gap-2">
+                      <strong className="text-[#142B45] text-xs uppercase tracking-wider font-mono">
+                        Evaluation Desk • {selectedFinding.findingType.replace(/_/g, ' ')}
+                      </strong>
+                      <button
+                        onClick={() => setSelectedFinding(null)}
+                        aria-label="Close finding detail"
+                        className="text-[#142B45] hover:text-black"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
                     </div>
-                    {selectedFinding.overrideReason && <p className="text-rose-800">Override by {selectedFinding.overrideByName} · {selectedFinding.overrideReason}</p>}
+
+                    {selectedFinding.documentId && (
+                      <a
+                        href={fileUrl(application.id, selectedFinding.documentId)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 text-[#142B45] font-bold underline hover:text-[#E98232]"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        <span>Inspect Original Document {selectedFinding.evidencePage ? `(Page ${selectedFinding.evidencePage})` : ''}</span>
+                      </a>
+                    )}
+
+                    {selectedFinding.evidence && (
+                      <blockquote className="border-l-4 border-[#142B45] bg-white p-2.5 text-[#17202B] rounded-sm font-mono text-[11px] shadow-sm">
+                        <div className="text-[10px] font-black uppercase text-[#5B6875] mb-1">
+                          OCR Excerpt Expose
+                          {selectedFinding.evidencePage ? ` • Page ${selectedFinding.evidencePage}` : ''}
+                          {selectedFinding.ocrConfidence !== null ? ` • ${selectedFinding.ocrConfidence.toFixed(1)}% Confidence` : ''}
+                        </div>
+                        {selectedFinding.evidence}
+                      </blockquote>
+                    )}
+
+                    <div className="grid sm:grid-cols-2 gap-2 text-xs">
+                      <div className="bg-white p-2 rounded-sm border border-[#17202B]">
+                        <span className="text-[10px] font-bold text-[#5B6875] uppercase block">Declared in Application:</span>
+                        <span className="font-mono font-bold text-[#17202B]">{selectedFinding.applicationValue || 'N/A'}</span>
+                      </div>
+                      <div className="bg-white p-2 rounded-sm border border-[#17202B]">
+                        <span className="text-[10px] font-bold text-[#5B6875] uppercase block">Document Evidence:</span>
+                        <span className="font-mono font-bold text-[#17202B]">{selectedFinding.documentValue || 'Not extracted'}</span>
+                      </div>
+                    </div>
+
+                    <p className="text-[#17202B] font-medium text-xs">
+                      <strong>Handbook Recommended Action:</strong> {selectedFinding.recommendedAction}
+                    </p>
+
+                    <div>
+                      <label className="block font-black text-xs uppercase text-[#142B45] mb-1">
+                        Officer Finding Verification Note * (Minimum 5 characters)
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={reviewNote}
+                        onChange={(event) => setReviewNote(event.target.value)}
+                        placeholder="State technical basis for confirming, dismissing, or resolving this finding..."
+                        className="w-full rounded-sm border-2 border-[#17202B] bg-white p-2 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-[#E98232]"
+                      />
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        disabled={busy}
+                        onClick={() => saveFindingReview('CONFIRMED')}
+                        className="px-3 py-1.5 rounded-sm bg-[#B45309] hover:bg-[#8C3D0E] text-white border border-[#17202B] font-bold uppercase tracking-wider text-xs shadow-[1px_1px_0px_#17202B] disabled:opacity-50"
+                      >
+                        Confirm Finding
+                      </button>
+                      <button
+                        disabled={busy}
+                        onClick={() => saveFindingReview('DISMISSED')}
+                        className="px-3 py-1.5 rounded-sm bg-[#5B6875] hover:bg-[#2E3A47] text-white border border-[#17202B] font-bold uppercase tracking-wider text-xs shadow-[1px_1px_0px_#17202B] disabled:opacity-50"
+                      >
+                        Dismiss as False Positive
+                      </button>
+                      <button
+                        disabled={busy}
+                        onClick={() => saveFindingReview('RESOLVED')}
+                        className="px-3 py-1.5 rounded-sm bg-[#18794E] hover:bg-[#13603E] text-white border border-[#17202B] font-bold uppercase tracking-wider text-xs shadow-[1px_1px_0px_#17202B] disabled:opacity-50"
+                      >
+                        Mark Finding Resolved
+                      </button>
+                    </div>
+
+                    {selectedFinding.overrideReason && (
+                      <p className="text-[#C5221F] font-bold font-mono text-[11px] bg-white p-2 border border-[#C5221F] rounded-sm">
+                        OVERRIDE BY {selectedFinding.overrideByName}: {selectedFinding.overrideReason}
+                      </p>
+                    )}
                   </div>
                 )}
               </section>
 
-              <section className="rounded-lg border border-slate-200 p-4">
-                <h3 className="font-bold text-slate-900">Scrutiny history</h3>
-                {workbench.application.scrutinyRuns.length === 0 && workbench.application.officerDecisions.length === 0 ? <p className="mt-2 text-slate-500">No previous scrutiny or decision history.</p> : <div className="mt-2 space-y-2">
-                  {workbench.application.scrutinyRuns.map((run) => <div key={run.id} className="border-l-2 border-blue-400 pl-2"><strong>Analysis run</strong> · {new Date(run.createdAt).toLocaleString()} · {run.officerName} · {run.findings.length} findings</div>)}
-                  {workbench.application.officerDecisions.map((item) => <div key={item.id} className="border-l-2 border-emerald-400 pl-2"><strong>{item.decision.replace(/_/g, ' ')}</strong> · {new Date(item.createdAt).toLocaleString()} · {item.officerName} · {item.remarks}</div>)}
-                </div>}
+              {/* Scrutiny & Decision History */}
+              <section className="rounded-sm border-2 border-[#17202B] bg-white p-4 shadow-[2px_2px_0px_#17202B]">
+                <h3 className="font-black text-[#142B45] text-xs uppercase tracking-wider">
+                  Audit History of Regulatory Decisions
+                </h3>
+                {workbench.application.scrutinyRuns.length === 0 && workbench.application.officerDecisions.length === 0 ? (
+                  <p className="mt-2 text-[#5B6875] italic">No previous scrutiny or decision history recorded.</p>
+                ) : (
+                  <div className="mt-2 space-y-2 font-mono text-[11px]">
+                    {workbench.application.scrutinyRuns.map((run) => (
+                      <div key={run.id} className="border-l-4 border-[#142B45] pl-2 py-0.5">
+                        <strong className="text-[#142B45]">Analysis Run:</strong> {new Date(run.createdAt).toLocaleString()} • Officer: {run.officerName} • Findings: {run.findings.length}
+                      </div>
+                    ))}
+                    {workbench.application.officerDecisions.map((item) => (
+                      <div key={item.id} className="border-l-4 border-[#18794E] pl-2 py-0.5">
+                        <strong className="text-[#18794E] uppercase">{item.decision.replace(/_/g, ' ')}:</strong> {new Date(item.createdAt).toLocaleString()} • Officer: {item.officerName} • Remarks: {item.remarks}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </section>
 
-              <form onSubmit={saveDecision} className="rounded-lg border border-slate-300 p-4 space-y-3">
-                <h3 className="font-bold text-slate-900">Officer decision</h3>
-                {blocking.length > 0 && <div className="flex items-center gap-2 text-rose-800"><ShieldAlert className="w-4 h-4" /> Approval blocked by unresolved material findings. Resolve, dismiss with reason, or use a permitted admin override.</div>}
-                {(['APPROVE', 'REQUEST_CORRECTION', 'REJECT'] as const).map((choice) => (
-                  <label key={choice} className="mr-4 inline-flex items-center gap-1.5 font-semibold"><input type="radio" name="decision" checked={decision === choice} onChange={() => setDecision(choice)} disabled={application.isDemo} />{choice.replace(/_/g, ' ')}</label>
-                ))}
-                {decision !== 'APPROVE' && <div className="space-y-1"><div className="font-semibold">Select supporting findings / documents *</div>{findings.filter((finding) => finding.reviewState !== 'DISMISSED').map((finding) => <label key={finding.id} className="flex items-start gap-2 text-slate-700"><input type="checkbox" checked={affectedFindingIds.includes(finding.id)} onChange={() => toggleId(affectedFindingIds, setAffectedFindingIds, finding.id)} />{finding.severity} · {finding.fieldName} — {finding.reason}</label>)}</div>}
-                {canOverride && decision === 'APPROVE' && blocking.length > 0 && <div className="rounded bg-amber-50 p-3 space-y-2"><strong>System administrator blocking-finding override</strong>{blocking.map((finding) => <label key={finding.id} className="flex gap-2"><input type="checkbox" checked={overrideFindingIds.includes(finding.id)} onChange={() => toggleId(overrideFindingIds, setOverrideFindingIds, finding.id)} />Override {finding.severity}: {finding.fieldName}</label>)}{overrideFindingIds.length > 0 && <textarea required minLength={10} rows={2} value={overrideReason} onChange={(event) => setOverrideReason(event.target.value)} placeholder="Specific justification for each selected override (minimum 10 characters)" className="w-full rounded border border-amber-300 bg-white p-2" />}</div>}
-                <label className="block font-semibold">Final remarks * (minimum 10 characters)
-                  <textarea required minLength={10} maxLength={4000} rows={3} value={remarks} onChange={(event) => setRemarks(event.target.value)} className="mt-1 block w-full rounded border border-slate-300 p-2 font-normal" placeholder="Record the factual basis and relevant documents/findings for this decision." />
-                </label>
-                <div className="flex items-start gap-2 text-[10px] text-slate-500"><AlertTriangle className="w-3.5 h-3.5 mt-0.5" />An officer's decision is persisted separately from OCR. Approval advances to EVC scheduling; OCR does not approve the institution.</div>
-                <div className="flex justify-end">
-                  <button type="submit" disabled={busy || application.isDemo || !workbench.latestRun} className="inline-flex gap-1.5 items-center px-4 py-2 rounded bg-gov-navy-900 text-white font-bold disabled:opacity-50"><CheckCircle2 className="w-4 h-4" />Save officer decision</button>
+              {/* Officer Decision Form */}
+              <form onSubmit={saveDecision} className="rounded-sm border-2 border-[#17202B] bg-white p-4 space-y-3 shadow-[2px_2px_0px_#17202B]">
+                <h3 className="font-black text-[#142B45] text-xs uppercase tracking-wider">
+                  Record Officer Statutory Decision
+                </h3>
+
+                {blocking.length > 0 && (
+                  <div className="flex items-center gap-2 text-[#C5221F] bg-[#FDF2F2] p-2.5 rounded-sm border border-[#C5221F] font-bold">
+                    <ShieldAlert className="w-4 h-4 flex-shrink-0" />
+                    <span>Statutory approval blocked by {blocking.length} unresolved discrepancy finding(s). Resolve or record deficiency notice.</span>
+                  </div>
+                )}
+
+                <div className="flex flex-wrap gap-4 pt-1">
+                  {(['APPROVE', 'REQUEST_CORRECTION', 'REJECT'] as const).map((choice) => (
+                    <label key={choice} className="inline-flex items-center gap-2 font-black uppercase text-xs cursor-pointer">
+                      <input
+                        type="radio"
+                        name="decision"
+                        checked={decision === choice}
+                        onChange={() => setDecision(choice)}
+                        disabled={application.isDemo}
+                        className="w-4 h-4 text-[#142B45] border-2 border-[#17202B]"
+                      />
+                      <span>{choice.replace(/_/g, ' ')}</span>
+                    </label>
+                  ))}
+                </div>
+
+                {decision !== 'APPROVE' && (
+                  <div className="space-y-1.5 p-3 bg-[#FAF9F6] border border-[#17202B] rounded-sm">
+                    <div className="font-black text-xs uppercase text-[#142B45]">Associate Relevant Discrepancies *</div>
+                    {findings
+                      .filter((finding) => finding.reviewState !== 'DISMISSED')
+                      .map((finding) => (
+                        <label key={finding.id} className="flex items-start gap-2 text-[#17202B] text-xs cursor-pointer font-medium">
+                          <input
+                            type="checkbox"
+                            checked={affectedFindingIds.includes(finding.id)}
+                            onChange={() => toggleId(affectedFindingIds, setAffectedFindingIds, finding.id)}
+                            className="mt-0.5 w-4 h-4 text-[#142B45] border-2 border-[#17202B]"
+                          />
+                          <span>
+                            <strong>[{finding.severity}] {finding.fieldName}</strong> — {finding.reason}
+                          </span>
+                        </label>
+                      ))}
+                  </div>
+                )}
+
+                {canOverride && decision === 'APPROVE' && blocking.length > 0 && (
+                  <div className="rounded-sm border-2 border-[#B45309] bg-[#FFF7ED] p-3 space-y-2">
+                    <strong className="text-xs uppercase font-black text-[#B45309]">System Administrator Statutory Override Desk</strong>
+                    {blocking.map((finding) => (
+                      <label key={finding.id} className="flex gap-2 text-xs font-bold text-[#17202B]">
+                        <input
+                          type="checkbox"
+                          checked={overrideFindingIds.includes(finding.id)}
+                          onChange={() => toggleId(overrideFindingIds, setOverrideFindingIds, finding.id)}
+                        />
+                        <span>Override [{finding.severity}]: {finding.fieldName}</span>
+                      </label>
+                    ))}
+                    {overrideFindingIds.length > 0 && (
+                      <textarea
+                        required
+                        minLength={10}
+                        rows={2}
+                        value={overrideReason}
+                        onChange={(event) => setOverrideReason(event.target.value)}
+                        placeholder="Provide formal statutory justification for overriding each selected discrepancy (minimum 10 characters)..."
+                        className="w-full rounded-sm border-2 border-[#B45309] bg-white p-2 text-xs font-medium"
+                      />
+                    )}
+                  </div>
+                )}
+
+                <div>
+                  <label className="block font-black text-xs uppercase text-[#142B45] mb-1">
+                    Officer Decision Remarks * (Minimum 10 characters)
+                  </label>
+                  <textarea
+                    required
+                    minLength={10}
+                    maxLength={4000}
+                    rows={3}
+                    value={remarks}
+                    onChange={(event) => setRemarks(event.target.value)}
+                    className="w-full rounded-sm border-2 border-[#17202B] p-2.5 text-xs font-medium bg-[#FAF9F6] focus:bg-white focus:outline-none"
+                    placeholder="Record the factual basis, handbook clauses, and inspected evidence for this regulatory determination..."
+                  />
+                </div>
+
+                <div className="flex items-start gap-2 text-[10px] text-[#5B6875] font-medium">
+                  <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-[#B45309]" />
+                  <span>
+                    Officer decisions are cryptographically recorded in the permanent regulatory audit trail. Automated verification assists human officers; statutory decisions remain strictly human-in-the-loop per AICTE mandate.
+                  </span>
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <button
+                    type="submit"
+                    disabled={busy || application.isDemo || !workbench.latestRun}
+                    className="inline-flex gap-2 items-center px-4 py-2 rounded-sm bg-[#142B45] hover:bg-[#0A1B38] text-white border-2 border-[#17202B] font-black uppercase tracking-wider text-xs shadow-[2px_2px_0px_#17202B] disabled:opacity-50 transition"
+                  >
+                    <CheckCircle2 className="w-4 h-4 text-[#18794E]" />
+                    <span>Save Formal Regulatory Decision</span>
+                  </button>
                 </div>
               </form>
             </>

@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { useSearchParams, Link, useNavigate } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { GeometricMark } from '../../components/common/GeometricMark';
+import { IndiaFlag } from '../../components/common/GovtEmblem';
 import { resetPassword } from '../../services/authService';
 import { Lock, CheckCircle2, AlertCircle, ArrowRight, Eye, EyeOff } from 'lucide-react';
 
 export const ResetPasswordPage: React.FC = () => {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
 
   const tokenFromUrl = searchParams.get('token') || '';
   const [token, setToken] = useState(tokenFromUrl);
@@ -49,77 +49,91 @@ export const ResetPasswordPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-between py-12 px-4 sm:px-6 lg:px-8 selection:bg-gov-navy-800 selection:text-white">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+    <div className="min-h-screen bg-[#FAF9F6] text-[#17202B] flex flex-col justify-between selection:bg-[#142B45] selection:text-white">
+      {/* 1. National Accent Ribbon */}
+      <div className="gov-accent-stripe" aria-hidden="true" />
+
+      {/* 2. Top Header Bar */}
+      <div className="bg-[#0A1B38] text-white text-[11px] py-1.5 px-4 sm:px-8 border-b-2 border-[#17202B] flex justify-between items-center">
+        <div className="flex items-center space-x-2">
+          <IndiaFlag width={20} height={13} />
+          <span className="font-bold tracking-wide">AICTE National Approval Portal</span>
+        </div>
+        <span className="font-mono text-[10px] text-[#E98232] font-bold">
+          SIH PS 26262 • Bit2Bramha
+        </span>
+      </div>
+
+      <div className="py-12 px-4 sm:px-6 lg:px-8 sm:mx-auto sm:w-full sm:max-w-md flex-1 flex flex-col justify-center">
         <div className="text-center mb-6">
           <div className="flex justify-center mb-2">
             <GeometricMark size={48} />
           </div>
-          <h1 className="text-2xl font-black text-gov-navy-950 tracking-tight">
+          <h1 className="text-2xl font-black text-[#142B45] tracking-tight">
             PRAVAH
           </h1>
-          <p className="text-xs font-bold text-gov-navy-800 uppercase tracking-widest">
-            Set New Account Password
+          <p className="text-xs font-black text-[#B45309] uppercase tracking-widest font-mono mt-0.5">
+            UPDATE INSTITUTION CREDENTIALS
           </p>
         </div>
 
-        <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/50">
+        <div className="bg-white p-6 sm:p-8 rounded-sm border-2 border-[#17202B] shadow-[4px_4px_0px_#17202B]">
           {isSuccess ? (
             <div className="text-center space-y-4">
-              <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
-                <CheckCircle2 className="w-8 h-8" />
+              <div className="w-14 h-14 bg-[#EBF6F0] text-[#18794E] border-2 border-[#18794E] rounded-sm flex items-center justify-center mx-auto shadow-[2px_2px_0px_#18794E]">
+                <CheckCircle2 className="w-7 h-7" />
               </div>
-              <h2 className="text-lg font-bold text-slate-900">
-                Password Reset Successful!
+              <h2 className="text-base font-black text-[#142B45] uppercase">
+                Credentials Updated Successfully
               </h2>
-              <p className="text-xs text-slate-600">
-                Your new Argon2id hashed password has been committed to the PRAVAH authoritative directory.
+              <p className="text-xs text-[#5B6875] leading-relaxed">
+                Your new institutional password has been securely updated. You can now authenticate into the portal.
               </p>
               <div className="pt-2">
                 <Link
                   to="/login"
-                  className="w-full inline-flex items-center justify-center space-x-1.5 py-2.5 px-4 rounded-lg bg-gov-navy-950 text-white text-xs font-bold hover:bg-gov-navy-900 transition"
+                  className="w-full inline-flex items-center justify-center space-x-2 py-2 px-4 rounded-sm bg-[#142B45] hover:bg-[#0A1B38] text-white text-xs font-black uppercase tracking-wider border-2 border-[#17202B] shadow-[2px_2px_0px_#17202B] transition"
                 >
                   <span>Sign In with New Password</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-4 h-4 text-[#E98232]" />
                 </Link>
               </div>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <h2 className="text-lg font-bold text-slate-900 mb-1">
-                  Create New Password
+              <div className="mb-4 pb-2 border-b-2 border-[#17202B]">
+                <h2 className="text-base font-black text-[#142B45]">
+                  Establish New Password
                 </h2>
-                <p className="text-xs text-slate-500 mb-4">
-                  Please choose a strong password with at least 8 characters.
+                <p className="text-xs text-[#5B6875] mt-0.5 font-medium">
+                  Enter your reset token and new representative password
                 </p>
               </div>
 
               {errorMessage && (
-                <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start space-x-2">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0 text-rose-600 mt-0.5" />
-                  <span>{errorMessage}</span>
+                <div className="p-3 rounded-sm bg-[#FDF2F2] border-2 border-[#C5221F] text-[#C5221F] text-xs font-bold flex items-start space-x-2 shadow-[2px_2px_0px_#C5221F]">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                  <span className="font-mono">{errorMessage}</span>
                 </div>
               )}
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Reset Token
+                <label className="block text-[11px] font-black uppercase text-[#142B45] mb-1">
+                  Reset Authorization Token *
                 </label>
                 <input
                   type="text"
                   required
                   value={token}
                   onChange={(e) => setToken(e.target.value)}
-                  placeholder="Paste 64-character reset token"
-                  className="w-full px-3 py-2 text-xs font-mono bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gov-navy-600"
+                  placeholder="Paste reset token here"
+                  className="w-full px-3 py-2 text-xs font-mono font-bold bg-[#FAF9F6] border-2 border-[#17202B] rounded-sm text-[#17202B] focus:bg-white focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  New Password (min 8 characters)
+                <label className="block text-[11px] font-black uppercase text-[#142B45] mb-1">
+                  New Password (min 8 chars) *
                 </label>
                 <div className="relative">
                   <input
@@ -128,13 +142,13 @@ export const ResetPasswordPage: React.FC = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••••••"
-                    className="w-full pl-9 pr-10 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gov-navy-600"
+                    className="w-full pl-9 pr-10 py-2 text-xs font-medium bg-[#FAF9F6] border-2 border-[#17202B] rounded-sm text-[#17202B] focus:bg-white focus:outline-none"
                   />
-                  <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                  <Lock className="w-4 h-4 text-[#5B6875] absolute left-3 top-2.5" />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600"
+                    className="absolute right-3 top-2.5 text-[#5B6875] hover:text-[#17202B]"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -142,8 +156,8 @@ export const ResetPasswordPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Confirm New Password
+                <label className="block text-[11px] font-black uppercase text-[#142B45] mb-1">
+                  Confirm New Password *
                 </label>
                 <div className="relative">
                   <input
@@ -152,26 +166,30 @@ export const ResetPasswordPage: React.FC = () => {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="••••••••••••"
-                    className="w-full pl-9 pr-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gov-navy-600"
+                    className="w-full pl-9 pr-10 py-2 text-xs font-medium bg-[#FAF9F6] border-2 border-[#17202B] rounded-sm text-[#17202B] focus:bg-white focus:outline-none"
                   />
-                  <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                  <Lock className="w-4 h-4 text-[#5B6875] absolute left-3 top-2.5" />
                 </div>
               </div>
 
-              <div className="pt-2">
+              <div className="pt-1">
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full flex items-center justify-center space-x-2 py-2.5 px-4 rounded-lg bg-gov-navy-950 text-white text-xs font-bold hover:bg-gov-navy-900 transition disabled:opacity-50"
+                  className="w-full flex items-center justify-center space-x-2 py-2.5 px-4 rounded-sm bg-[#142B45] hover:bg-[#0A1B38] text-white text-xs font-black uppercase tracking-wider border-2 border-[#17202B] shadow-[2px_2px_0px_#17202B] transition disabled:opacity-50"
                 >
-                  {isSubmitting ? <span>Updating Password...</span> : <span>Commit New Password</span>}
-                  <ArrowRight className="w-4 h-4" />
+                  {isSubmitting ? (
+                    <span>Updating Password...</span>
+                  ) : (
+                    <span>Update Representative Password</span>
+                  )}
+                  <ArrowRight className="w-4 h-4 text-[#E98232]" />
                 </button>
               </div>
 
               <div className="text-center pt-2">
-                <Link to="/login" className="text-xs text-blue-600 hover:text-blue-800 font-semibold">
-                  Back to Sign In
+                <Link to="/login" className="text-xs font-bold text-[#B45309] hover:underline">
+                  Return to Portal Sign In
                 </Link>
               </div>
             </form>
@@ -179,8 +197,8 @@ export const ResetPasswordPage: React.FC = () => {
         </div>
       </div>
 
-      <footer className="py-4 text-center text-xs text-slate-500">
-        AICTE PRAVAH Identity Verification Service
+      <footer className="py-3 px-4 text-center text-xs text-[#5B6875] border-t-2 border-[#17202B] bg-white font-mono">
+        PRAVAH AICTE Portal • Secure Institutional Password Update Subsystem
       </footer>
     </div>
   );

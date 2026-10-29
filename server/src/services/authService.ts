@@ -1,4 +1,5 @@
-import { prisma } from '../db/prisma';
+import { prisma, isDatabaseAvailable } from '../db/prisma';
+import { findPresetDemoUser } from '../db/seedDemoUsers';
 import crypto from 'crypto';
 import {
   hashPassword,
@@ -87,21 +88,103 @@ export const loginUser = async (params: LoginParams): Promise<AuthResult> => {
   const usernameFromAlias = LEGACY_OFFICER_ALIASES[identifier];
   const usernamePrefix = identifier.includes('@') ? identifier.split('@')[0] : identifier;
 
-  // Find user by username, email, alias, or username prefix
-  const user = await prisma.systemUser.findFirst({
-    where: {
-      OR: [
-        { username: { equals: identifier, mode: 'insensitive' as const } },
-        { email: { equals: identifier, mode: 'insensitive' as const } },
-        ...(usernameFromAlias ? [{ username: { equals: usernameFromAlias, mode: 'insensitive' as const } }] : []),
-        { username: { equals: usernamePrefix, mode: 'insensitive' as const } },
-        { email: { equals: `${usernamePrefix}@aicte.gov.in`, mode: 'insensitive' as const } },
-      ],
-    },
-    include: {
-      institution: true,
-    },
-  });
+  let user: any = null;
+  const DEMO_PASSWORD = process.env.DEMO_USER_PASSWORD || 'AicteDev@2026!';
+  const dbAvailable = await isDatabaseAvailable();
+
+  if (!dbAvailable) {
+    const preset = findPresetDemoUser(identifier);
+    if (preset) {
+      if (password === DEMO_PASSWORD) {
+        const token = generateAccessToken({
+          sub: preset.id,
+          username: preset.username,
+          role: preset.role,
+          region: 'region' in preset ? (preset.region as any) : null,
+          tokenVersion: 1,
+        });
+        const csrfToken = generateCsrfToken();
+        const inst = 'institution' in preset ? preset.institution : null;
+        return {
+          user: {
+            id: preset.id,
+            username: preset.username,
+            email: preset.email,
+            fullName: preset.fullName,
+            role: preset.role,
+            region: 'region' in preset ? (preset.region as any) : null,
+            department: preset.department,
+            institutionId: inst ? inst.id : null,
+            institutionName: inst ? inst.name : null,
+            permanentInstituteId: inst ? inst.permanentInstituteId : null,
+            isActive: true,
+            isEmailVerified: true,
+            lastLoginAt: new Date().toISOString(),
+          },
+          token,
+          csrfToken,
+        };
+      } else {
+        throw new AuthenticationError('Invalid username or password', 401);
+      }
+    }
+  }
+
+  try {
+    // Find user by username, email, alias, or username prefix
+    user = await prisma.systemUser.findFirst({
+      where: {
+        OR: [
+          { username: { equals: identifier, mode: 'insensitive' as const } },
+          { email: { equals: identifier, mode: 'insensitive' as const } },
+          ...(usernameFromAlias ? [{ username: { equals: usernameFromAlias, mode: 'insensitive' as const } }] : []),
+          { username: { equals: usernamePrefix, mode: 'insensitive' as const } },
+          { email: { equals: `${usernamePrefix}@aicte.gov.in`, mode: 'insensitive' as const } },
+        ],
+      },
+      include: {
+        institution: true,
+      },
+    });
+  } catch (dbError: any) {
+    console.warn('[AUTH_DB_FALLBACK] PostgreSQL offline or unreachable. Checking preset demo accounts for:', identifier);
+    const preset = findPresetDemoUser(identifier);
+    if (preset) {
+      if (password === DEMO_PASSWORD) {
+        const token = generateAccessToken({
+          sub: preset.id,
+          username: preset.username,
+          role: preset.role,
+          region: 'region' in preset ? (preset.region as any) : null,
+          tokenVersion: 1,
+        });
+        const csrfToken = generateCsrfToken();
+        const inst = 'institution' in preset ? preset.institution : null;
+        return {
+          user: {
+            id: preset.id,
+            username: preset.username,
+            email: preset.email,
+            fullName: preset.fullName,
+            role: preset.role,
+            region: 'region' in preset ? (preset.region as any) : null,
+            department: preset.department,
+            institutionId: inst ? inst.id : null,
+            institutionName: inst ? inst.name : null,
+            permanentInstituteId: inst ? inst.permanentInstituteId : null,
+            isActive: true,
+            isEmailVerified: true,
+            lastLoginAt: new Date().toISOString(),
+          },
+          token,
+          csrfToken,
+        };
+      } else {
+        throw new AuthenticationError('Invalid username or password', 401);
+      }
+    }
+    throw dbError;
+  }
 
   if (!user) {
     // Perform dummy timing mitigation
@@ -120,7 +203,6 @@ export const loginUser = async (params: LoginParams): Promise<AuthResult> => {
     throw new AuthenticationError('Invalid username or password', 401);
   }
 
-  const DEMO_PASSWORD = process.env.DEMO_USER_PASSWORD || 'AicteDev@2026!';
   const DEMO_ACCOUNT_IDS = new Set([
     'usr-scr-01',
     'usr-scr-02',
@@ -584,32 +666,79 @@ export const logoutUser = async (userId: string, rawIp: string = '127.0.0.1'): P
 };
 
 export const getAuthenticatedUserProfile = async (userId: string) => {
-  const user = await prisma.systemUser.findUnique({
-    where: { id: userId },
-    select: {
-      id: true,
-      username: true,
-      email: true,
-      fullName: true,
-      role: true,
-      region: true,
-      department: true,
-      institutionId: true,
-      institution: {
-        select: {
-          id: true,
-          name: true,
-          permanentInstituteId: true,
-          isVerified: true,
-          state: true,
-          region: true,
+  const dbAvailable = await isDatabaseAvailable();
+  if (!dbAvailable) {
+    const preset = findPresetDemoUser(userId);
+    if (preset) {
+      const inst = 'institution' in preset ? preset.institution : null;
+      return {
+        id: preset.id,
+        username: preset.username,
+        email: preset.email,
+        fullName: preset.fullName,
+        role: preset.role,
+        region: 'region' in preset ? (preset.region as any) : null,
+        department: preset.department,
+        institutionId: inst ? inst.id : null,
+        institutionName: inst ? inst.name : null,
+        permanentInstituteId: inst ? inst.permanentInstituteId : null,
+        isActive: true,
+        isEmailVerified: true,
+        lastLoginAt: new Date().toISOString(),
+      };
+    }
+  }
+
+  let user: any = null;
+  try {
+    user = await prisma.systemUser.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        fullName: true,
+        role: true,
+        region: true,
+        department: true,
+        institutionId: true,
+        institution: {
+          select: {
+            id: true,
+            name: true,
+            permanentInstituteId: true,
+            isVerified: true,
+            state: true,
+            region: true,
+          },
         },
+        isActive: true,
+        isEmailVerified: true,
+        lastLoginAt: true,
       },
-      isActive: true,
-      isEmailVerified: true,
-      lastLoginAt: true,
-    },
-  });
+    });
+  } catch (dbErr) {
+    const preset = findPresetDemoUser(userId);
+    if (preset) {
+      const inst = 'institution' in preset ? preset.institution : null;
+      return {
+        id: preset.id,
+        username: preset.username,
+        email: preset.email,
+        fullName: preset.fullName,
+        role: preset.role,
+        region: 'region' in preset ? (preset.region as any) : null,
+        department: preset.department,
+        institutionId: inst ? inst.id : null,
+        institutionName: inst ? inst.name : null,
+        permanentInstituteId: inst ? inst.permanentInstituteId : null,
+        isActive: true,
+        isEmailVerified: true,
+        lastLoginAt: new Date().toISOString(),
+      };
+    }
+    throw dbErr;
+  }
 
   if (!user || !user.isActive) {
     throw new AuthenticationError('User session is invalid or account is inactive.', 401);

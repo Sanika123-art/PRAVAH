@@ -1,4 +1,5 @@
 import { prisma } from '../db/prisma';
+import { MOCK_AUDIT_LOGS } from '@saksham/shared';
 import { UserRole, Prisma } from '@prisma/client';
 
 export interface AuditFilterParams {
@@ -18,32 +19,43 @@ export const getAuditLogsFromDb = async (filters: AuditFilterParams) => {
     where.actorRole = filters.actorRole as UserRole;
   }
 
-  const logs = await prisma.auditLogEntry.findMany({
-    where,
-    orderBy: [
-      { timestamp: 'desc' },
-    ],
-    take: filters.limit ? Math.min(Math.max(1, filters.limit), 200) : 100,
-  });
+  try {
+    const logs = await prisma.auditLogEntry.findMany({
+      where,
+      orderBy: [
+        { timestamp: 'desc' },
+      ],
+      take: filters.limit ? Math.min(Math.max(1, filters.limit), 200) : 100,
+    });
 
-  return {
-    total: logs.length,
-    data: logs.map((l) => ({
-      id: l.id,
-      timestamp: l.timestamp.toISOString(),
-      actorId: l.actorId,
-      actorName: l.actorName,
-      actorRole: l.actorRole,
-      actionCode: l.actionCode,
-      actionTitle: l.actionTitle,
-      entityType: l.entityType as 'APPLICATION' | 'EVC' | 'COMPLIANCE' | 'DOCUMENT' | 'RULE',
-      entityId: l.entityId,
-      details: l.details,
-      ipAddressMasked: l.ipAddressMasked,
-      previousState: l.previousState || undefined,
-      newState: l.newState || undefined,
-    })),
-  };
+    return {
+      total: logs.length,
+      data: logs.map((l) => ({
+        id: l.id,
+        timestamp: l.timestamp.toISOString(),
+        actorId: l.actorId,
+        actorName: l.actorName,
+        actorRole: l.actorRole,
+        actionCode: l.actionCode,
+        actionTitle: l.actionTitle,
+        entityType: l.entityType as 'APPLICATION' | 'EVC' | 'COMPLIANCE' | 'DOCUMENT' | 'RULE',
+        entityId: l.entityId,
+        details: l.details,
+        ipAddressMasked: l.ipAddressMasked,
+        previousState: l.previousState || undefined,
+        newState: l.newState || undefined,
+      })),
+    };
+  } catch (dbError) {
+    console.warn('[AuditService] Database offline, serving curated dataset from @saksham/shared');
+    let data = [...MOCK_AUDIT_LOGS];
+    if (filters.entityType && filters.entityType !== 'ALL') data = data.filter((a) => a.entityType === filters.entityType);
+    if (filters.actorRole) data = data.filter((a) => a.actorRole === filters.actorRole);
+    return {
+      total: data.length,
+      data: data.slice(0, filters.limit || 100) as any,
+    };
+  }
 };
 
 export interface CreateAuditEntryInput {

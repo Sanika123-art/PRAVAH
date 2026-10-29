@@ -121,7 +121,7 @@ export async function ensureCsrfToken(forceRefresh = false): Promise<string | nu
         return null;
       }
 
-      const headerToken = response.headers.get('x-csrf-token');
+      const headerToken = response.headers?.get?.('x-csrf-token') || null;
       const json = await response.json();
       const token = headerToken || json?.data?.csrfToken || json?.csrfToken || null;
       if (token) {
@@ -195,7 +195,7 @@ export async function apiGet<T>(
 
     clearTimeout(timeoutId);
 
-    const updatedCsrf = response.headers.get('x-csrf-token');
+    const updatedCsrf = response.headers?.get?.('x-csrf-token');
     if (updatedCsrf) {
       setCsrfToken(updatedCsrf);
     }
@@ -287,7 +287,7 @@ export async function apiMutate<T>(
 
     clearTimeout(timeoutId);
 
-    const updatedCsrf = response.headers.get('x-csrf-token');
+    const updatedCsrf = response.headers?.get?.('x-csrf-token');
     if (updatedCsrf) {
       setCsrfToken(updatedCsrf);
     }
@@ -400,7 +400,7 @@ export async function apiUpload<T>(
 
     clearTimeout(timeoutId);
 
-    const updatedCsrf = response.headers.get('x-csrf-token');
+    const updatedCsrf = response.headers?.get?.('x-csrf-token');
     if (updatedCsrf) {
       setCsrfToken(updatedCsrf);
     }

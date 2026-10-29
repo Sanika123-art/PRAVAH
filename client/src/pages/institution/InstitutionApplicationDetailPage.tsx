@@ -161,23 +161,23 @@ export const InstitutionApplicationDetailPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Back button & Title */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white border-2 border-[#17202B] p-4 rounded-sm shadow-[2px_2px_0px_#17202B]">
         <div>
           <Link
             to="/institution/applications"
-            className="inline-flex items-center space-x-1.5 text-xs text-slate-500 hover:text-slate-800 font-semibold mb-1"
+            className="inline-flex items-center space-x-1.5 text-xs text-[#5B6875] hover:text-[#17202B] font-mono font-bold uppercase tracking-wider mb-1"
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
             </svg>
-            <span>Back to Applications</span>
+            <span>Back to Applications Register</span>
           </Link>
           <div className="flex items-center space-x-3">
-            <h1 className="text-xl font-bold font-mono text-gov-navy-950">
+            <h1 className="text-xl font-black font-mono text-[#142B45] tracking-wide">
               {application.applicationNumber}
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200">
-              {application.isDraft ? 'Draft' : application.currentStage.replace(/_/g, ' ')}
+            <span className="px-2.5 py-0.5 text-xs font-mono font-black uppercase rounded-sm border-2 border-[#17202B] bg-[#EAF0F5] text-[#142B45]">
+              {application.isDraft ? 'DRAFT DOSSIER' : application.currentStage.replace(/_/g, ' ')}
             </span>
           </div>
         </div>
@@ -185,7 +185,7 @@ export const InstitutionApplicationDetailPage: React.FC = () => {
         {application.isDraft && (
           <Link
             to={`/institution/applications/new?draftId=${application.id}`}
-            className="px-4 py-2 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700"
+            className="gov-btn-saffron py-2 px-4 text-xs font-black shadow-[2px_2px_0px_#17202B]"
           >
             Continue Editing Draft
           </Link>
@@ -193,87 +193,38 @@ export const InstitutionApplicationDetailPage: React.FC = () => {
       </div>
 
       {/* Stage Progress Tracker */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
-        <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">
+      <div className="bg-white p-5 border-2 border-[#17202B] rounded-sm shadow-[2px_2px_0px_#17202B] overflow-x-auto">
+        <h2 className="text-xs font-mono font-black text-[#5B6875] uppercase tracking-wider mb-4 border-b-2 border-[#17202B] pb-2">
           Statutory Scrutiny Timeline & Processing State
         </h2>
-        <div className="flex items-center justify-between min-w-[720px]">
+        <div className="flex items-center justify-between min-w-[760px] gap-2">
           {WORKFLOW_STAGES.map((stg, i) => {
             const isPassed = currentStageIndex > i;
             const isCurrent = currentStageIndex === i || (currentStageIndex === -1 && i === 0);
 
             return (
               <React.Fragment key={stg.id}>
-                <div className="flex flex-col items-center text-center">
+                <div className={`flex flex-col items-center text-center p-2 rounded-sm border-2 transition min-w-[100px] ${
+                  isCurrent
+                    ? 'bg-[#142B45] text-white border-[#17202B] shadow-[2px_2px_0px_#17202B]'
+                    : isPassed
+                    ? 'bg-[#EAF0F5] text-[#17202B] border-[#17202B]'
+                    : 'bg-[#FAF9F6] text-[#5B6875] border-slate-300 opacity-60'
+                }`}>
                   <div
-                    className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs transition ${
-                      isPassed
-                        ? 'bg-emerald-600 text-white'
-                        : isCurrent
-                        ? 'bg-gov-navy-950 text-white ring-4 ring-blue-100'
-                        : 'bg-slate-100 text-slate-400'
+                    className={`w-7 h-7 rounded-sm border-2 flex items-center justify-center font-mono font-black text-xs mb-1 ${
+                      isCurrent
+                        ? 'bg-[#E98232] text-white border-white'
+                        : isPassed
+                        ? 'bg-[#18794E] text-white border-[#17202B]'
+                        : 'bg-white text-[#5B6875] border-slate-400'
                     }`}
                   >
                     {isPassed ? <CheckCircle2 className="w-4 h-4" /> : i + 1}
                   </div>
-
-                  {(application.officerDecisions?.length ?? 0) > 0 && (
-                    <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-3">
-                      <h2 className="text-sm font-bold text-slate-900">Officer decisions and remarks</h2>
-                      {application.officerDecisions?.map((decision) => (
-                        <div key={decision.id} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                          <div className="flex flex-wrap justify-between gap-2 font-bold text-xs">
-                            <span>{decision.decision.replace(/_/g, ' ')} · {decision.resultingStage.replace(/_/g, ' ')}</span>
-                            <span className="text-slate-500">{new Date(decision.createdAt).toLocaleString()} · {decision.officerName}</span>
-                          </div>
-                          <p className="mt-1 text-xs text-slate-700 whitespace-pre-line">{decision.remarks}</p>
-                        </div>
-                      ))}
-                    </section>
-                  )}
-
-                  {application.currentStage === 'RE_SCRUTINY' && application.isDeficient && (
-                    <section className="bg-amber-50 rounded-2xl border border-amber-200 shadow-sm p-5 space-y-4">
-                      <div>
-                        <h2 className="text-sm font-bold text-amber-950">Correct and resubmit application documents</h2>
-                        <p className="text-xs text-amber-900 mt-1">New uploads are checked by the server. Resubmission reruns OCR and document rules on the latest mandatory documents and preserves earlier scrutiny history.</p>
-                      </div>
-                      {correctionError && <p role="alert" className="rounded border border-rose-200 bg-white p-2 text-xs text-rose-800">{correctionError}</p>}
-                      {correctionMessage && <p className="rounded border border-emerald-200 bg-white p-2 text-xs text-emerald-800">{correctionMessage}</p>}
-                      {correctionChecklist.map((item) => (
-                        <div key={item.documentType} className="rounded-lg border border-amber-200 bg-white p-3 text-xs">
-                          <div className="flex flex-wrap justify-between gap-2">
-                            <strong>{item.title}{item.mandatory ? ' · Mandatory' : ''}</strong>
-                            <span className={item.uploadedDocument?.verificationStatus === 'VERIFIED' ? 'text-emerald-700 font-bold' : 'text-amber-800 font-bold'}>
-                              {item.uploadedDocument?.verificationStatus || 'Not uploaded'}
-                            </span>
-                          </div>
-                          <p className="mt-1 text-slate-600">{item.aphClause} · {item.description}</p>
-                          {item.uploadedDocument?.verificationExplanation && <p className="mt-1 text-slate-600">{item.uploadedDocument.verificationExplanation}</p>}
-                        </div>
-                      ))}
-                      <form onSubmit={handleCorrectionUpload} className="grid gap-2 sm:grid-cols-[1fr_1fr_auto] items-end">
-                        <label className="text-xs font-semibold text-slate-700">Document type
-                          <select required value={correctionType} onChange={(event) => setCorrectionType(event.target.value as DocumentType)} className="mt-1 block w-full rounded border border-slate-300 bg-white p-2">
-                            <option value="">Select required document</option>
-                            {correctionChecklist.map((item) => <option key={item.documentType} value={item.documentType}>{item.title}</option>)}
-                          </select>
-                        </label>
-                        <label className="text-xs font-semibold text-slate-700">Corrected file (PDF/JPEG/PNG)
-                          <input required type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" onChange={(event) => setCorrectionFile(event.target.files?.[0] || null)} className="mt-1 block w-full rounded border border-slate-300 bg-white p-1.5" />
-                        </label>
-                        <button disabled={isUploadingCorrection || !correctionType || !correctionFile} className="rounded bg-gov-navy-950 px-4 py-2 text-xs font-bold text-white disabled:opacity-50">
-                          {isUploadingCorrection ? 'Verifying…' : 'Upload & verify'}
-                        </button>
-                      </form>
-                      <button type="button" onClick={handleCorrectionResubmit} disabled={isResubmitting || correctionChecklist.some((item) => item.mandatory && item.uploadedDocument?.verificationStatus !== 'VERIFIED')} className="rounded bg-emerald-700 px-4 py-2 text-xs font-bold text-white disabled:opacity-50">
-                        {isResubmitting ? 'Revalidating…' : 'Revalidate and resubmit for scrutiny'}
-                      </button>
-                    </section>
-                  )}
                   <span
-                    className={`text-[11px] font-semibold mt-2 max-w-[100px] leading-tight ${
-                      isCurrent ? 'text-gov-navy-950 font-bold' : isPassed ? 'text-slate-700' : 'text-slate-400'
+                    className={`text-[10px] font-mono font-black uppercase tracking-wider leading-tight ${
+                      isCurrent ? 'text-white' : 'text-[#17202B]'
                     }`}
                   >
                     {stg.label}
@@ -281,8 +232,8 @@ export const InstitutionApplicationDetailPage: React.FC = () => {
                 </div>
                 {i < WORKFLOW_STAGES.length - 1 && (
                   <div
-                    className={`flex-1 h-0.5 mx-2 ${
-                      currentStageIndex > i ? 'bg-emerald-500' : 'bg-slate-200'
+                    className={`h-0.5 flex-1 border-t-2 border-dashed ${
+                      currentStageIndex > i ? 'border-[#18794E]' : 'border-slate-300'
                     }`}
                   />
                 )}
@@ -294,96 +245,210 @@ export const InstitutionApplicationDetailPage: React.FC = () => {
 
       {/* Overview Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <span className="text-[11px] font-semibold text-slate-500">Category & Cycle</span>
-          <div className="text-sm font-bold text-slate-900 mt-0.5">{application.category.replace(/_/g, ' ')}</div>
-          <div className="text-xs text-slate-500 font-mono mt-0.5">Cycle: {application.academicCycle || '2026-27'}</div>
+        <div className="bg-white p-4 rounded-sm border-2 border-[#17202B] shadow-[2px_2px_0px_#17202B]">
+          <span className="text-[10px] font-mono uppercase tracking-wider font-bold text-[#5B6875]">Category & Academic Cycle</span>
+          <div className="text-sm font-black text-[#17202B] mt-0.5">{application.category.replace(/_/g, ' ')}</div>
+          <div className="text-xs text-[#5B6875] font-mono mt-0.5">Cycle: {application.academicCycle || '2026-27'}</div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <span className="text-[11px] font-semibold text-slate-500">Approved vs Requested Intake</span>
-          <div className="text-sm font-bold text-slate-900 mt-0.5">{application.requestedIntake} Seats</div>
-          <div className="text-xs text-slate-500 mt-0.5">Campus Land: {application.landAreaAcres} Acres</div>
+        <div className="bg-white p-4 rounded-sm border-2 border-[#17202B] shadow-[2px_2px_0px_#17202B]">
+          <span className="text-[10px] font-mono uppercase tracking-wider font-bold text-[#5B6875]">Approved vs Requested Intake</span>
+          <div className="text-sm font-black font-mono text-[#142B45] mt-0.5">{application.requestedIntake} SEATS</div>
+          <div className="text-xs text-[#5B6875] font-mono mt-0.5">Campus Land: {application.landAreaAcres} Acres</div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <span className="text-[11px] font-semibold text-slate-500">Submission Date & Ageing</span>
-          <div className="text-sm font-bold text-slate-900 mt-0.5">
+        <div className="bg-white p-4 rounded-sm border-2 border-[#17202B] shadow-[2px_2px_0px_#17202B]">
+          <span className="text-[10px] font-mono uppercase tracking-wider font-bold text-[#5B6875]">Submission Date & Review Ageing</span>
+          <div className="text-sm font-black text-[#17202B] mt-0.5">
             {new Date(application.submissionDate).toLocaleDateString()}
           </div>
-          <div className="text-xs text-slate-500 mt-0.5">{application.totalAgeingDays} days in review</div>
+          <div className="text-xs text-[#5B6875] font-mono mt-0.5">{application.totalAgeingDays} days in review pipeline</div>
         </div>
       </div>
 
+      {/* Officer Decisions and Remarks (Properly unnested) */}
+      {(application.officerDecisions?.length ?? 0) > 0 && (
+        <section className="bg-white rounded-sm border-2 border-[#17202B] shadow-[2px_2px_0px_#17202B] p-5 space-y-3">
+          <div className="border-b-2 border-[#17202B] pb-2">
+            <h2 className="text-sm font-black uppercase tracking-wide text-[#142B45]">
+              Officer Decisions & Statutory Findings Log
+            </h2>
+            <p className="text-xs text-[#5B6875]">Recorded evaluations from the Scrutiny and Hearing committees</p>
+          </div>
+          <div className="space-y-3">
+            {application.officerDecisions?.map((decision) => (
+              <div key={decision.id} className="rounded-sm border-2 border-[#17202B] bg-[#FAF9F6] p-3 text-xs shadow-[1px_1px_0px_#17202B]">
+                <div className="flex flex-wrap justify-between gap-2 font-black">
+                  <span className="text-[#142B45] uppercase">{decision.decision.replace(/_/g, ' ')} · RESULTING: {decision.resultingStage.replace(/_/g, ' ')}</span>
+                  <span className="text-[#5B6875] font-mono">{new Date(decision.createdAt).toLocaleString()} · Officer: {decision.officerName}</span>
+                </div>
+                <p className="mt-1.5 text-xs text-[#17202B] whitespace-pre-line leading-relaxed font-mono bg-white p-2 border border-slate-300 rounded-sm">{decision.remarks}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Re-Scrutiny Correction Workflow (Properly unnested) */}
+      {application.currentStage === 'RE_SCRUTINY' && application.isDeficient && (
+        <section className="bg-amber-50 rounded-sm border-2 border-amber-700 shadow-[2px_2px_0px_#b45309] p-5 space-y-4">
+          <div className="border-b-2 border-amber-700 pb-2">
+            <h2 className="text-sm font-black text-amber-950 uppercase tracking-wide">
+              Correct and Resubmit Application Documents
+            </h2>
+            <p className="text-xs text-amber-900 mt-0.5">
+              New uploads are validated automatically by the server. Resubmission reruns preliminary rules on the latest mandatory documents and preserves earlier scrutiny history.
+            </p>
+          </div>
+          {correctionError && (
+            <p role="alert" className="rounded-sm border-2 border-rose-700 bg-white p-2.5 text-xs font-bold text-rose-900 shadow-[1px_1px_0px_#b91c1c]">
+              {correctionError}
+            </p>
+          )}
+          {correctionMessage && (
+            <p className="rounded-sm border-2 border-[#18794E] bg-white p-2.5 text-xs font-bold text-[#18794E] shadow-[1px_1px_0px_#18794E]">
+              {correctionMessage}
+            </p>
+          )}
+          <div className="space-y-2">
+            {correctionChecklist.map((item) => (
+              <div key={item.documentType} className="rounded-sm border-2 border-amber-700 bg-white p-3 text-xs shadow-[1px_1px_0px_#b45309]">
+                <div className="flex flex-wrap justify-between gap-2">
+                  <strong className="text-[#17202B] uppercase">{item.title}{item.mandatory ? ' · [MANDATORY]' : ''}</strong>
+                  <span className={`font-mono font-black ${item.uploadedDocument?.verificationStatus === 'VERIFIED' ? 'text-[#18794E]' : 'text-amber-800'}`}>
+                    {item.uploadedDocument?.verificationStatus || 'NOT UPLOADED'}
+                  </span>
+                </div>
+                <p className="mt-1 text-[#5B6875] font-mono text-[11px]">{item.aphClause} · {item.description}</p>
+                {item.uploadedDocument?.verificationExplanation && (
+                  <p className="mt-1 text-xs text-slate-700 bg-slate-50 p-1.5 border border-slate-200 rounded-sm">{item.uploadedDocument.verificationExplanation}</p>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <form onSubmit={handleCorrectionUpload} className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] items-end pt-2">
+            <div>
+              <label className="block text-xs font-mono font-bold uppercase text-amber-950 mb-1">
+                Required Document Type
+              </label>
+              <select
+                required
+                value={correctionType}
+                onChange={(event) => setCorrectionType(event.target.value as DocumentType)}
+                className="w-full rounded-sm border-2 border-amber-700 bg-white p-2 text-xs font-semibold"
+              >
+                <option value="">Select required document</option>
+                {correctionChecklist.map((item) => (
+                  <option key={item.documentType} value={item.documentType}>
+                    {item.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-mono font-bold uppercase text-amber-950 mb-1">
+                Corrected File (PDF/JPEG/PNG)
+              </label>
+              <input
+                required
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+                onChange={(event) => setCorrectionFile(event.target.files?.[0] || null)}
+                className="w-full rounded-sm border-2 border-amber-700 bg-white p-1 text-xs"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={isUploadingCorrection || !correctionType || !correctionFile}
+              className="gov-btn-primary py-2 px-4 text-xs font-bold disabled:opacity-50"
+            >
+              {isUploadingCorrection ? 'Verifying…' : 'Upload & Verify'}
+            </button>
+          </form>
+
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={handleCorrectionResubmit}
+              disabled={isResubmitting || correctionChecklist.some((item) => item.mandatory && item.uploadedDocument?.verificationStatus !== 'VERIFIED')}
+              className="gov-btn-saffron py-2 px-5 text-xs font-black shadow-[2px_2px_0px_#17202B] disabled:opacity-50"
+            >
+              {isResubmitting ? 'Revalidating Dossier…' : 'Revalidate and Resubmit for Scrutiny'}
+            </button>
+          </div>
+        </section>
+      )}
+
       {/* Released Deficiency Notices Section */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+      <div className="bg-white rounded-sm border-2 border-[#17202B] shadow-[2px_2px_0px_#17202B] p-6 space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b-2 border-[#17202B]">
           <div>
-            <h2 className="text-base font-bold text-slate-900">
+            <h2 className="text-base font-black text-[#142B45] uppercase tracking-wide">
               Scrutiny Deficiency Notices ({application.deficiencyNotices?.length || 0})
             </h2>
-            <p className="text-xs text-slate-500">
-              Formal deficiency notices released by the AICTE Scrutiny Committee requiring clarification
+            <p className="text-xs text-[#5B6875] mt-0.5">
+              Formal statutory deficiency notices released by the AICTE Scrutiny Committee requiring clarification
             </p>
           </div>
         </div>
 
         {(!application.deficiencyNotices || application.deficiencyNotices.length === 0) ? (
-          <div className="p-6 text-center text-xs text-slate-500">
-            <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
-            <span>No deficiency notices released on this application.</span>
+          <div className="p-8 text-center text-xs font-mono text-[#5B6875] border-2 border-dashed border-[#17202B]">
+            <CheckCircle2 className="w-8 h-8 text-[#18794E] mx-auto mb-2" />
+            <span className="font-bold text-[#17202B]">No formal deficiency notices issued on this dossier.</span>
           </div>
         ) : (
           <div className="space-y-3">
             {application.deficiencyNotices.map((notice) => (
               <div
                 key={notice.id}
-                className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-3"
+                className="p-4 rounded-sm border-2 border-[#17202B] bg-[#FAF9F6] space-y-3 shadow-[1px_1px_0px_#17202B]"
               >
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-300 pb-2">
                   <div className="flex items-center space-x-2">
-                    <span className="font-mono text-xs font-bold text-gov-navy-950">{notice.noticeNumber}</span>
-                    <span className="text-xs font-bold text-slate-900">{notice.title}</span>
-                    <span className="text-[10px] text-slate-500 font-mono">({notice.requirementRef})</span>
+                    <span className="font-mono text-xs font-black text-[#142B45]">{notice.noticeNumber}</span>
+                    <span className="text-xs font-black text-[#17202B] uppercase">{notice.title}</span>
+                    <span className="text-[10px] text-[#5B6875] font-mono font-bold">[{notice.requirementRef}]</span>
                   </div>
 
                   <div>
                     {notice.status === 'RESOLVED_SATISFIED' ? (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                      <span className="px-2 py-0.5 rounded-sm text-[10px] font-mono font-black border border-[#18794E] bg-emerald-100 text-emerald-950 uppercase">
                         Resolved / Satisfied
                       </span>
                     ) : notice.status === 'AWAITING_OFFICER_REVIEW' ? (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800">
+                      <span className="px-2 py-0.5 rounded-sm text-[10px] font-mono font-black border border-[#142B45] bg-[#EAF0F5] text-[#142B45] uppercase">
                         Response Awaiting Committee Review
                       </span>
                     ) : (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+                      <span className="px-2 py-0.5 rounded-sm text-[10px] font-mono font-black border border-amber-600 bg-amber-100 text-amber-950 uppercase">
                         Clarification Required
                       </span>
                     )}
                   </div>
                 </div>
 
-                <p className="text-xs text-slate-700 bg-white p-3 rounded-lg border border-slate-200">
+                <p className="text-xs text-[#17202B] bg-white p-3 rounded-sm border border-slate-300 font-mono leading-relaxed">
                   {notice.description}
                 </p>
 
                 {notice.institutionResponse && (
-                  <div className="p-3 bg-blue-50/70 rounded-lg border border-blue-200 text-xs">
-                    <div className="font-bold text-blue-900 mb-0.5">Your Clarification Response:</div>
-                    <p className="text-blue-800">{notice.institutionResponse}</p>
+                  <div className="p-3 bg-[#EAF0F5] rounded-sm border-2 border-[#142B45] text-xs">
+                    <div className="font-black text-[#142B45] uppercase tracking-wide mb-1">Your Clarification Response:</div>
+                    <p className="text-[#17202B] font-mono">{notice.institutionResponse}</p>
                     {notice.responseDocumentRef && (
-                      <div className="text-[11px] text-blue-700 mt-1">
-                        Attached Reference: <strong>{notice.responseDocumentRef}</strong>
+                      <div className="text-[11px] text-[#5B6875] font-mono mt-1 pt-1 border-t border-slate-300">
+                        Attached Supporting Reference: <strong>{notice.responseDocumentRef}</strong>
                       </div>
                     )}
                   </div>
                 )}
 
                 {notice.officerReviewNotes && (
-                  <div className="p-3 bg-emerald-50/70 rounded-lg border border-emerald-200 text-xs text-emerald-900">
-                    <span className="font-bold">Scrutiny Officer Evaluation Note:</span>
-                    <p className="mt-0.5">{notice.officerReviewNotes}</p>
+                  <div className="p-3 bg-emerald-50 rounded-sm border-2 border-[#18794E] text-xs text-emerald-950">
+                    <span className="font-black uppercase tracking-wide">Scrutiny Officer Evaluation Note:</span>
+                    <p className="mt-1 font-mono">{notice.officerReviewNotes}</p>
                   </div>
                 )}
 
@@ -392,9 +457,9 @@ export const InstitutionApplicationDetailPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleOpenResponseModal(notice)}
-                      className="px-3 py-1.5 rounded-lg bg-gov-navy-950 hover:bg-gov-navy-900 text-white text-xs font-bold transition shadow-sm"
+                      className="gov-btn-primary py-1.5 px-3.5 text-xs font-bold"
                     >
-                      {notice.institutionResponse ? 'Update Response / Evidence' : 'Submit Response & Evidence'}
+                      {notice.institutionResponse ? 'Update Response & Evidence' : 'Submit Response & Evidence'}
                     </button>
                   </div>
                 )}
@@ -405,85 +470,105 @@ export const InstitutionApplicationDetailPage: React.FC = () => {
       </div>
 
       {/* Uploaded Documents Vault */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
-        <div>
-          <h2 className="text-base font-bold text-slate-900">
-            Uploaded Statutory Documents ({application.documents?.length || 0})
+      <div className="bg-white rounded-sm border-2 border-[#17202B] shadow-[2px_2px_0px_#17202B] p-6 space-y-4">
+        <div className="border-b-2 border-[#17202B] pb-3">
+          <h2 className="text-base font-black text-[#142B45] uppercase tracking-wide">
+            Uploaded Statutory Documents Vault ({application.documents?.length || 0})
           </h2>
-          <p className="text-xs text-slate-500">
-            Secure, hashed regulatory documents submitted for AICTE scrutiny
+          <p className="text-xs text-[#5B6875] mt-0.5">
+            Immutable, hashed regulatory documents submitted for AICTE scrutiny evaluation
           </p>
         </div>
 
         {(!application.documents || application.documents.length === 0) ? (
-          <p className="text-xs text-slate-500">No documents uploaded for this application.</p>
+          <p className="text-xs font-mono text-[#5B6875]">No documents uploaded for this application.</p>
         ) : (
-          <div className="divide-y divide-slate-100 border border-slate-200 rounded-xl overflow-hidden text-xs">
-            {application.documents.map((doc) => (
-              <div key={doc.id} className="p-3.5 flex justify-between items-center bg-white hover:bg-slate-50 transition">
-                <div>
-                  <div className="flex items-center space-x-2">
-                    <span className="font-bold text-slate-900">{doc.title}</span>
-                    <span className="text-[10px] text-slate-500 font-mono">({(doc.fileSize / 1024).toFixed(1)} KB)</span>
-                    <span className="px-1.5 py-0.2 bg-slate-100 text-slate-700 rounded text-[10px] font-mono">
-                      {doc.verificationStatus}
-                    </span>
-                  </div>
-                  <div className="text-[11px] text-slate-400 font-mono mt-0.5">
-                    SHA-256: {doc.fileHash ? doc.fileHash.slice(0, 16) + '...' : 'Verified on upload'} • {new Date(doc.createdAt).toLocaleDateString()}
-                  </div>
-                </div>
-
-                <a
-                  href={`/api/institution/applications/${application.id}/documents/${doc.id}/file`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center space-x-1 px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 text-xs font-semibold transition"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Download</span>
-                </a>
-              </div>
-            ))}
+          <div className="border-2 border-[#17202B] rounded-sm overflow-hidden text-xs shadow-[2px_2px_0px_#17202B]">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>Document Title & Details</th>
+                  <th>Verification Status</th>
+                  <th>SHA-256 Checksum & Date</th>
+                  <th className="text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {application.documents.map((doc) => (
+                  <tr key={doc.id}>
+                    <td>
+                      <div className="font-black text-[#17202B]">{doc.title}</div>
+                      <div className="text-[10px] text-[#5B6875] font-mono">{(doc.fileSize / 1024).toFixed(1)} KB · {doc.documentType}</div>
+                    </td>
+                    <td>
+                      <span className={`px-2 py-0.5 rounded-sm font-mono text-[10px] font-black border ${
+                        doc.verificationStatus === 'VERIFIED'
+                          ? 'bg-emerald-100 text-emerald-950 border-[#18794E]'
+                          : doc.verificationStatus === 'REJECTED'
+                          ? 'bg-rose-100 text-rose-950 border-rose-700'
+                          : 'bg-amber-100 text-amber-950 border-amber-600'
+                      }`}>
+                        {doc.verificationStatus}
+                      </span>
+                    </td>
+                    <td className="font-mono text-[11px] text-[#5B6875]">
+                      <div>{doc.fileHash ? doc.fileHash.slice(0, 18) + '...' : 'Verified on upload'}</div>
+                      <div className="text-[10px] text-slate-400">{new Date(doc.createdAt).toLocaleDateString()}</div>
+                    </td>
+                    <td className="text-right">
+                      <a
+                        href={`/api/institution/applications/${application.id}/documents/${doc.id}/file`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="gov-btn-secondary py-1 px-2.5 text-xs font-bold inline-flex items-center space-x-1"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>Download</span>
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
 
       {/* Deficiency Response Modal */}
       {activeNoticeForResponse && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95">
-            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+        <div className="fixed inset-0 z-50 bg-[#17202B]/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-sm max-w-lg w-full p-6 shadow-[4px_4px_0px_#17202B] border-2 border-[#17202B] space-y-4">
+            <div className="flex justify-between items-center pb-2 border-b-2 border-[#17202B]">
               <div>
-                <h3 className="text-sm font-bold text-slate-900">
+                <h3 className="text-sm font-black text-[#142B45] uppercase tracking-wide">
                   Respond to Deficiency Notice
                 </h3>
-                <span className="text-xs font-mono text-slate-500">
+                <span className="text-xs font-mono text-[#5B6875]">
                   {activeNoticeForResponse.noticeNumber} — {activeNoticeForResponse.title}
                 </span>
               </div>
               <button
                 type="button"
                 onClick={() => setActiveNoticeForResponse(null)}
-                className="text-slate-400 hover:text-slate-600 p-1 rounded"
+                className="text-[#5B6875] hover:text-[#17202B] p-1 border border-transparent hover:border-[#17202B] rounded-sm"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {responseSuccessMsg ? (
-              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-center space-y-2">
-                <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" />
-                <div className="text-xs font-bold text-emerald-900">{responseSuccessMsg}</div>
+              <div className="p-4 bg-emerald-50 border-2 border-[#18794E] rounded-sm text-center space-y-2">
+                <CheckCircle2 className="w-8 h-8 text-[#18794E] mx-auto" />
+                <div className="text-xs font-black text-emerald-950 uppercase">{responseSuccessMsg}</div>
               </div>
             ) : (
               <form onSubmit={handleSubmitResponse} className="space-y-4">
-                <div className="p-3 bg-slate-50 rounded-lg text-xs text-slate-700 border border-slate-200">
+                <div className="p-3 bg-[#FAF9F6] rounded-sm text-xs text-[#17202B] border-2 border-[#17202B]">
                   <strong>Deficiency Observation:</strong> {activeNoticeForResponse.description}
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-mono font-bold uppercase text-[#17202B] mb-1">
                     Institutional Clarification / Explanation *
                   </label>
                   <textarea
@@ -492,12 +577,12 @@ export const InstitutionApplicationDetailPage: React.FC = () => {
                     value={responseText}
                     onChange={(e) => setResponseText(e.target.value)}
                     placeholder="Provide specific factual explanation addressing the committee observation..."
-                    className="w-full p-2.5 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gov-navy-600"
+                    className="w-full p-2.5 text-xs bg-[#FAF9F6] border-2 border-[#17202B] rounded-sm text-[#17202B] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#142B45]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-mono font-bold uppercase text-[#17202B] mb-1">
                     Supporting Document Reference / Filename (if applicable)
                   </label>
                   <input
@@ -505,24 +590,24 @@ export const InstitutionApplicationDetailPage: React.FC = () => {
                     value={documentRef}
                     onChange={(e) => setDocumentRef(e.target.value)}
                     placeholder="e.g. Registered_Lease_Deed_Addendum_35Yr.pdf"
-                    className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gov-navy-600"
+                    className="w-full px-3 py-2 text-xs bg-[#FAF9F6] border-2 border-[#17202B] rounded-sm text-[#17202B] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#142B45]"
                   />
                 </div>
 
-                <div className="pt-2 flex justify-end space-x-2">
+                <div className="pt-2 flex justify-end space-x-2 border-t border-slate-300">
                   <button
                     type="button"
                     onClick={() => setActiveNoticeForResponse(null)}
-                    className="px-4 py-2 rounded-lg border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50"
+                    className="gov-btn-secondary py-1.5 px-4 text-xs font-bold"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmittingResponse || !responseText.trim()}
-                    className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-gov-navy-950 text-white text-xs font-bold hover:bg-gov-navy-900 disabled:opacity-50"
+                    className="gov-btn-primary py-1.5 px-4 text-xs font-bold disabled:opacity-50"
                   >
-                    <Send className="w-3.5 h-3.5" />
+                    <Send className="w-3.5 h-3.5 mr-1" />
                     <span>{isSubmittingResponse ? 'Submitting...' : 'Submit Clarification'}</span>
                   </button>
                 </div>

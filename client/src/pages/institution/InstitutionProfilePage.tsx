@@ -79,77 +79,81 @@ export const InstitutionProfilePage: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-4xl">
-      <div>
-        <h1 className="text-xl font-bold text-slate-900">Institution Profile & Authorizations</h1>
-        <p className="text-xs text-slate-500">
-          Statutory record and authorized contact particulars for AICTE notifications
-        </p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white border-2 border-[#17202B] p-4 rounded-sm shadow-[2px_2px_0px_#17202B]">
+        <div>
+          <h1 className="text-xl font-black text-[#142B45] uppercase tracking-wide">Institution Profile & Central Directory Record</h1>
+          <p className="text-xs text-[#5B6875] mt-0.5">
+            Authoritative institutional record, permanent identification coordinates, and verified regulatory representative particulars
+          </p>
+        </div>
       </div>
 
       {successMsg && (
-        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center space-x-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-          <span className="font-semibold">{successMsg}</span>
+        <div className="p-3.5 rounded-sm bg-emerald-50 border-2 border-[#18794E] text-emerald-950 text-xs flex items-center space-x-2 shadow-[2px_2px_0px_#18794E]">
+          <CheckCircle2 className="w-4 h-4 text-[#18794E] flex-shrink-0" />
+          <span className="font-bold">{successMsg}</span>
         </div>
       )}
 
       {errorMsg && (
-        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center space-x-2">
-          <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
-          <span className="font-semibold">{errorMsg}</span>
+        <div className="p-3.5 rounded-sm bg-rose-50 border-2 border-rose-700 text-rose-950 text-xs flex items-center space-x-2 shadow-[2px_2px_0px_#b91c1c]">
+          <AlertCircle className="w-4 h-4 text-rose-700 flex-shrink-0" />
+          <span className="font-bold">{errorMsg}</span>
         </div>
       )}
 
       {/* Identity Cards */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-        <div className="flex items-center space-x-3 pb-3 border-b border-slate-100">
-          <Building2 className="w-6 h-6 text-blue-600" />
+      <div className="bg-white p-6 border-2 border-[#17202B] rounded-sm shadow-[2px_2px_0px_#17202B] space-y-4">
+        <div className="flex items-center space-x-3 pb-3 border-b-2 border-[#17202B]">
+          <div className="w-10 h-10 rounded-sm border-2 border-[#17202B] bg-[#EAF0F5] flex items-center justify-center">
+            <Building2 className="w-6 h-6 text-[#142B45]" />
+          </div>
           <div>
-            <h2 className="text-base font-bold text-slate-900">{profile?.name}</h2>
+            <h2 className="text-base font-black text-[#142B45] uppercase tracking-wide">{profile?.name}</h2>
             <div className="flex items-center space-x-2 mt-0.5">
-              <span className="text-xs font-mono font-bold text-gov-navy-950">
+              <span className="text-xs font-mono font-black text-[#142B45]">
                 PID: {profile?.permanentInstituteId}
               </span>
-              <span className="px-2 py-0.2 bg-emerald-100 text-emerald-800 rounded text-[10px] font-bold">
-                {profile?.isVerified ? 'Verified Institution' : 'Pending Authorization'}
+              <span className="px-2 py-0.5 border border-[#18794E] bg-emerald-100 text-emerald-950 rounded-sm text-[10px] font-mono font-bold uppercase">
+                {profile?.isVerified ? 'VERIFIED INSTITUTION' : 'PENDING AUTHORIZATION'}
               </span>
             </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-            <span className="font-semibold text-slate-500">Sponsoring Trust / Society:</span>
-            <div className="font-bold text-slate-900 mt-0.5">{profile?.trustName}</div>
+          <div className="p-3.5 bg-[#FAF9F6] rounded-sm border-2 border-[#17202B]">
+            <span className="font-mono text-[10px] uppercase font-bold text-[#5B6875]">Sponsoring Trust / Society:</span>
+            <div className="font-bold text-[#17202B] mt-0.5">{profile?.trustName}</div>
           </div>
 
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-            <span className="font-semibold text-slate-500">Institution Category:</span>
-            <div className="font-bold text-slate-900 mt-0.5">{profile?.institutionType?.replace(/_/g, ' ')}</div>
+          <div className="p-3.5 bg-[#FAF9F6] rounded-sm border-2 border-[#17202B]">
+            <span className="font-mono text-[10px] uppercase font-bold text-[#5B6875]">Institution Category:</span>
+            <div className="font-bold text-[#17202B] mt-0.5">{profile?.institutionType?.replace(/_/g, ' ')}</div>
           </div>
 
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-            <span className="font-semibold text-slate-500">Regional Bureau Jurisdiction:</span>
-            <div className="font-bold text-slate-900 mt-0.5">{profile?.region?.replace(/_/g, ' ')}</div>
+          <div className="p-3.5 bg-[#FAF9F6] rounded-sm border-2 border-[#17202B]">
+            <span className="font-mono text-[10px] uppercase font-bold text-[#5B6875]">Regional Bureau Jurisdiction:</span>
+            <div className="font-bold text-[#17202B] mt-0.5">{profile?.region?.replace(/_/g, ' ')}</div>
           </div>
 
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-            <span className="font-semibold text-slate-500">Current Representative:</span>
-            <div className="font-bold text-slate-900 mt-0.5">{currentUser?.fullName} ({currentUser?.email})</div>
+          <div className="p-3.5 bg-[#FAF9F6] rounded-sm border-2 border-[#17202B]">
+            <span className="font-mono text-[10px] uppercase font-bold text-[#5B6875]">Authoritative Representative:</span>
+            <div className="font-bold text-[#17202B] mt-0.5">{currentUser?.fullName} ({currentUser?.email})</div>
           </div>
         </div>
       </div>
 
       {/* Editable Contact Form */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-        <h2 className="text-base font-bold text-slate-900 mb-4 pb-2 border-b border-slate-100">
+      <div className="bg-white p-6 border-2 border-[#17202B] rounded-sm shadow-[2px_2px_0px_#17202B]">
+        <h2 className="text-base font-black text-[#142B45] uppercase tracking-wide mb-4 pb-2 border-b-2 border-[#17202B]">
           Official Communication Particulars
         </h2>
 
         <form onSubmit={handleSave} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-mono font-bold uppercase text-[#17202B] mb-1">
                 Official Institutional Email *
               </label>
               <input
@@ -157,12 +161,12 @@ export const InstitutionProfilePage: React.FC = () => {
                 required
                 value={contactEmail}
                 onChange={(e) => setContactEmail(e.target.value)}
-                className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gov-navy-600"
+                className="w-full px-3 py-2 text-xs font-semibold bg-[#FAF9F6] border-2 border-[#17202B] rounded-sm text-[#17202B] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#142B45]"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-mono font-bold uppercase text-[#17202B] mb-1">
                 Official Contact Phone / Landline
               </label>
               <input
@@ -170,12 +174,12 @@ export const InstitutionProfilePage: React.FC = () => {
                 value={contactPhone}
                 onChange={(e) => setContactPhone(e.target.value)}
                 placeholder="+91 20 25678900"
-                className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gov-navy-600"
+                className="w-full px-3 py-2 text-xs font-semibold bg-[#FAF9F6] border-2 border-[#17202B] rounded-sm text-[#17202B] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#142B45]"
               />
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-mono font-bold uppercase text-[#17202B] mb-1">
                 Campus Postal Address
               </label>
               <input
@@ -183,12 +187,12 @@ export const InstitutionProfilePage: React.FC = () => {
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder="Survey No. 42, Knowledge Park, Technology Corridor"
-                className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gov-navy-600"
+                className="w-full px-3 py-2 text-xs font-semibold bg-[#FAF9F6] border-2 border-[#17202B] rounded-sm text-[#17202B] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#142B45]"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-mono font-bold uppercase text-[#17202B] mb-1">
                 District / City
               </label>
               <input
@@ -196,12 +200,12 @@ export const InstitutionProfilePage: React.FC = () => {
                 value={district}
                 onChange={(e) => setDistrict(e.target.value)}
                 placeholder="Pune"
-                className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gov-navy-600"
+                className="w-full px-3 py-2 text-xs font-semibold bg-[#FAF9F6] border-2 border-[#17202B] rounded-sm text-[#17202B] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#142B45]"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-mono font-bold uppercase text-[#17202B] mb-1">
                 Postal PIN Code
               </label>
               <input
@@ -209,18 +213,18 @@ export const InstitutionProfilePage: React.FC = () => {
                 value={pincode}
                 onChange={(e) => setPincode(e.target.value)}
                 placeholder="411007"
-                className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gov-navy-600"
+                className="w-full px-3 py-2 text-xs font-mono font-bold bg-[#FAF9F6] border-2 border-[#17202B] rounded-sm text-[#17202B] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#142B45]"
               />
             </div>
           </div>
 
-          <div className="pt-3 flex justify-end">
+          <div className="pt-3 border-t border-slate-300 flex justify-end">
             <button
               type="submit"
               disabled={isSaving}
-              className="inline-flex items-center space-x-1.5 py-2 px-5 rounded-lg bg-gov-navy-950 text-white text-xs font-bold hover:bg-gov-navy-900 shadow-sm transition disabled:opacity-50"
+              className="gov-btn-primary py-2 px-5 text-xs font-bold disabled:opacity-50"
             >
-              <Save className="w-4 h-4" />
+              <Save className="w-4 h-4 mr-1.5" />
               <span>{isSaving ? 'Saving...' : 'Save Profile Changes'}</span>
             </button>
           </div>

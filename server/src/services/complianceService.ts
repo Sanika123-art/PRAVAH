@@ -1,4 +1,5 @@
 import { prisma } from '../db/prisma';
+import { MOCK_COMPLIANCE_ITEMS } from '@saksham/shared';
 import { ComplianceStatus, Region, Prisma } from '@prisma/client';
 
 export interface ComplianceFilterParams {
@@ -21,32 +22,40 @@ export const getComplianceItemsFromDb = async (filters: ComplianceFilterParams) 
     ];
   }
 
-  const items = await prisma.complianceItem.findMany({
-    where,
-    orderBy: [
-      { isOverdue: 'desc' },
-      { daysRemaining: 'asc' },
-    ],
-  });
+  try {
+    const items = await prisma.complianceItem.findMany({
+      where,
+      orderBy: [
+        { isOverdue: 'desc' },
+        { daysRemaining: 'asc' },
+      ],
+    });
 
-  return {
-    total: items.length,
-    data: items.map((c) => ({
-      id: c.id,
-      applicationId: c.applicationId,
-      applicationNumber: c.applicationNumber || '',
-      instituteName: c.instituteName || '',
-      region: (c.region || 'NORTHERN') as Region,
-      undertakingType: c.undertakingType,
-      description: c.description,
-      grantedDate: c.grantedDate.toISOString(),
-      dueDate: c.dueDate.toISOString(),
-      daysRemaining: c.daysRemaining,
-      status: c.status,
-      isOverdue: c.isOverdue,
-      submittedDocumentRef: c.submittedDocumentRef || undefined,
-      lastReminderSentDate: c.lastReminderSentDate ? c.lastReminderSentDate.toISOString() : undefined,
-      escalationLevel: c.escalationLevel as 'NONE' | 'LEVEL_1_WARNING' | 'LEVEL_2_SHOW_CAUSE' | 'LEVEL_3_HEARING',
-    })),
-  };
+    return {
+      total: items.length,
+      data: items.map((c) => ({
+        id: c.id,
+        applicationId: c.applicationId,
+        applicationNumber: c.applicationNumber || '',
+        instituteName: c.instituteName || '',
+        region: (c.region || 'NORTHERN') as Region,
+        undertakingType: c.undertakingType,
+        description: c.description,
+        grantedDate: c.grantedDate.toISOString(),
+        dueDate: c.dueDate.toISOString(),
+        daysRemaining: c.daysRemaining,
+        status: c.status,
+        isOverdue: c.isOverdue,
+        submittedDocumentRef: c.submittedDocumentRef || undefined,
+        lastReminderSentDate: c.lastReminderSentDate ? c.lastReminderSentDate.toISOString() : undefined,
+        escalationLevel: c.escalationLevel as 'NONE' | 'LEVEL_1_WARNING' | 'LEVEL_2_SHOW_CAUSE' | 'LEVEL_3_HEARING',
+      })),
+    };
+  } catch (dbError) {
+    console.warn('[ComplianceService] Database offline, serving curated dataset from @saksham/shared');
+    let data = [...MOCK_COMPLIANCE_ITEMS];
+    if (filters.status) data = data.filter((c) => c.status === filters.status);
+    if (filters.overdueOnly) data = data.filter((c) => c.isOverdue || c.daysRemaining < 0);
+    return { total: data.length, data: data as any };
+  }
 };

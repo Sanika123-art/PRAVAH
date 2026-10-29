@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { prisma } from '../db/prisma';
+import { prisma, isDatabaseAvailable } from '../db/prisma';
+import { findPresetDemoUser } from '../db/seedDemoUsers';
 import { verifyAccessToken } from '../utils/security';
 import { AuthenticatedUser, UserRole, Region } from '@saksham/shared';
 
@@ -48,32 +49,91 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
       return;
     }
 
-    // Verify against authoritative database record
-    const user = await prisma.systemUser.findUnique({
-      where: { id: payload.sub },
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        fullName: true,
-        role: true,
-        region: true,
-        department: true,
-        institutionId: true,
-        institution: {
-          select: {
-            id: true,
-            name: true,
-            permanentInstituteId: true,
+    // Fast check for offline database
+    const dbAvailable = await isDatabaseAvailable();
+    let user: any = null;
+
+    if (!dbAvailable) {
+      const preset = findPresetDemoUser(payload.sub) || findPresetDemoUser(payload.username);
+      if (preset) {
+        const inst = 'institution' in preset ? preset.institution : null;
+        user = {
+          id: preset.id,
+          username: preset.username,
+          email: preset.email,
+          fullName: preset.fullName,
+          role: preset.role,
+          region: 'region' in preset ? preset.region : null,
+          department: preset.department,
+          institutionId: inst ? inst.id : null,
+          institution: inst ? {
+            id: inst.id,
+            name: inst.name,
+            permanentInstituteId: inst.permanentInstituteId,
             isVerified: true,
+          } : null,
+          isActive: true,
+          isEmailVerified: true,
+          tokenVersion: payload.tokenVersion,
+          lastLoginAt: new Date(),
+        };
+      }
+    } else {
+      try {
+      user = await prisma.systemUser.findUnique({
+        where: { id: payload.sub },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          fullName: true,
+          role: true,
+          region: true,
+          department: true,
+          institutionId: true,
+          institution: {
+            select: {
+              id: true,
+              name: true,
+              permanentInstituteId: true,
+              isVerified: true,
+            },
           },
+          isActive: true,
+          isEmailVerified: true,
+          tokenVersion: true,
+          lastLoginAt: true,
         },
-        isActive: true,
-        isEmailVerified: true,
-        tokenVersion: true,
-        lastLoginAt: true,
-      },
-    });
+      });
+    } catch (dbErr) {
+      const preset = findPresetDemoUser(payload.sub) || findPresetDemoUser(payload.username);
+      if (preset) {
+        const inst = 'institution' in preset ? preset.institution : null;
+        user = {
+          id: preset.id,
+          username: preset.username,
+          email: preset.email,
+          fullName: preset.fullName,
+          role: preset.role,
+          region: 'region' in preset ? preset.region : null,
+          department: preset.department,
+          institutionId: inst ? inst.id : null,
+          institution: inst ? {
+            id: inst.id,
+            name: inst.name,
+            permanentInstituteId: inst.permanentInstituteId,
+            isVerified: true,
+          } : null,
+          isActive: true,
+          isEmailVerified: true,
+          tokenVersion: payload.tokenVersion,
+          lastLoginAt: new Date(),
+        };
+      } else {
+        throw dbErr;
+      }
+    }
+  }
 
     if (!user) {
       res.status(401).json({

@@ -1,9 +1,8 @@
 import { prisma } from '../db/prisma';
-import { ApplicationStage, ApplicationCategory, DashboardMetrics } from '@saksham/shared';
+import { ApplicationStage, ApplicationCategory, DashboardMetrics, MOCK_DASHBOARD_METRICS } from '@saksham/shared';
 
 export const getDashboardMetricsFromDb = async (): Promise<DashboardMetrics> => {
-  const [
-    totalApplications,
+  let totalApplications,
     stageGroups,
     categoryGroups,
     pendingScrutinyCount,
@@ -14,52 +13,71 @@ export const getDashboardMetricsFromDb = async (): Promise<DashboardMetrics> => 
     complianceOverdueCount,
     docExpiringSoonCount,
     docExpiredCount,
-    ageingAggregate,
-  ] = await Promise.all([
-    prisma.application.count(),
-    prisma.application.groupBy({
-      by: ['currentStage'],
-      _count: { _all: true },
-    }),
-    prisma.application.groupBy({
-      by: ['category'],
-      _count: { _all: true },
-    }),
-    prisma.application.count({
-      where: { currentStage: { in: ['SCRUTINY', 'RE_SCRUTINY'] } },
-    }),
-    prisma.application.count({
-      where: { priority: 'CRITICAL_OVERDUE' },
-    }),
-    prisma.eVCInspection.count({
-      where: { status: 'SCHEDULED' },
-    }),
-    prisma.eVCInspection.count({
-      where: { OR: [{ isOverdue: true }, { status: 'REPORT_OVERDUE' }] },
-    }),
-    prisma.complianceItem.count({
-      where: {
-        status: 'ACTIVE_PENDING',
-        daysRemaining: { gt: 0, lte: 30 },
-      },
-    }),
-    prisma.complianceItem.count({
-      where: {
-        OR: [{ isOverdue: true }, { daysRemaining: { lt: 0 } }],
-      },
-    }),
-    prisma.documentValidityRecord.count({
-      where: {
-        validityStatus: { in: ['EXPIRING_SOON', 'CRITICAL_WARNING'] },
-      },
-    }),
-    prisma.documentValidityRecord.count({
-      where: { validityStatus: 'EXPIRED' },
-    }),
-    prisma.application.aggregate({
-      _avg: { totalAgeingDays: true },
-    }),
-  ]);
+    ageingAggregate;
+
+  try {
+    [
+      totalApplications,
+      stageGroups,
+      categoryGroups,
+      pendingScrutinyCount,
+      overdueTasksCount,
+      evcScheduledCount,
+      evcOverdueReportsCount,
+      complianceDueSoonCount,
+      complianceOverdueCount,
+      docExpiringSoonCount,
+      docExpiredCount,
+      ageingAggregate,
+    ] = await Promise.all([
+      prisma.application.count(),
+      prisma.application.groupBy({
+        by: ['currentStage'],
+        _count: { _all: true },
+      }),
+      prisma.application.groupBy({
+        by: ['category'],
+        _count: { _all: true },
+      }),
+      prisma.application.count({
+        where: { currentStage: { in: ['SCRUTINY', 'RE_SCRUTINY'] } },
+      }),
+      prisma.application.count({
+        where: { priority: 'CRITICAL_OVERDUE' },
+      }),
+      prisma.eVCInspection.count({
+        where: { status: 'SCHEDULED' },
+      }),
+      prisma.eVCInspection.count({
+        where: { OR: [{ isOverdue: true }, { status: 'REPORT_OVERDUE' }] },
+      }),
+      prisma.complianceItem.count({
+        where: {
+          status: 'ACTIVE_PENDING',
+          daysRemaining: { gt: 0, lte: 30 },
+        },
+      }),
+      prisma.complianceItem.count({
+        where: {
+          OR: [{ isOverdue: true }, { daysRemaining: { lt: 0 } }],
+        },
+      }),
+      prisma.documentValidityRecord.count({
+        where: {
+          validityStatus: { in: ['EXPIRING_SOON', 'CRITICAL_WARNING'] },
+        },
+      }),
+      prisma.documentValidityRecord.count({
+        where: { validityStatus: 'EXPIRED' },
+      }),
+      prisma.application.aggregate({
+        _avg: { totalAgeingDays: true },
+      }),
+    ]);
+  } catch (dbError) {
+    console.warn('[MetricsService] Database offline, serving curated metrics from @saksham/shared');
+    return MOCK_DASHBOARD_METRICS;
+  }
 
   const stageDistribution: Record<ApplicationStage, number> = {
     SUBMITTED: 0,

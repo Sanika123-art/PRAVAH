@@ -97,10 +97,10 @@ export const ReportsPage: React.FC = () => {
 
   // Prepare stage distribution data for Pie Chart
   const stagePieData = [
-    { name: 'Scrutiny Desk', value: safeMetrics.stageDistribution.SCRUTINY + safeMetrics.stageDistribution.RE_SCRUTINY, color: '#2569C2' },
-    { name: 'EVC Inspections', value: safeMetrics.stageDistribution.EVC_SCHEDULED + safeMetrics.stageDistribution.EVC_COMPLETED, color: '#06B6D4' },
-    { name: 'Hearings (SHC/SAC)', value: safeMetrics.stageDistribution.SHC_HEARING + safeMetrics.stageDistribution.SAC_APPEAL, color: '#8B5CF6' },
-    { name: 'Approvals Granted', value: safeMetrics.stageDistribution.APPROVED_CONDITIONAL + safeMetrics.stageDistribution.APPROVAL_GRANTED, color: '#10B981' },
+    { name: 'Scrutiny Desk', value: safeMetrics.stageDistribution.SCRUTINY + safeMetrics.stageDistribution.RE_SCRUTINY, color: '#142B45' },
+    { name: 'EVC Inspections', value: safeMetrics.stageDistribution.EVC_SCHEDULED + safeMetrics.stageDistribution.EVC_COMPLETED, color: '#E98232' },
+    { name: 'Hearings (SHC/SAC)', value: safeMetrics.stageDistribution.SHC_HEARING + safeMetrics.stageDistribution.SAC_APPEAL, color: '#4B5563' },
+    { name: 'Approvals Granted', value: safeMetrics.stageDistribution.APPROVED_CONDITIONAL + safeMetrics.stageDistribution.APPROVAL_GRANTED, color: '#18794E' },
     { name: 'Initial Ingestion', value: safeMetrics.stageDistribution.SUBMITTED, color: '#94A3B8' },
   ];
 
@@ -122,22 +122,30 @@ export const ReportsPage: React.FC = () => {
   return (
     <div className="space-y-6 animate-in fade-in duration-150">
       {/* Action Header */}
-      <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+      <div className="bg-[#FAF9F6] border-2 border-[#17202B] rounded-sm p-4 shadow-[2px_2px_0px_#17202B] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h3 className="font-bold text-slate-900 text-sm flex items-center gap-1.5">
-            <BarChart3 className="w-4 h-4 text-gov-navy-800" />
+          <div className="flex items-center gap-2 mb-1">
+            <span className="font-mono text-[10px] font-bold uppercase tracking-wider bg-[#142B45] text-white px-2 py-0.5 rounded-sm">
+              EXECUTIVE DESK
+            </span>
+            <span className="font-mono text-[10px] font-bold text-slate-600 uppercase">
+              STATUTORY SLA & AGEING AUDIT
+            </span>
+          </div>
+          <h3 className="font-mono font-bold text-slate-900 text-base flex items-center gap-2">
+            <BarChart3 className="w-4 h-4 text-[#142B45]" />
             Consolidated Regulatory Analytics & SLA Ageing
           </h3>
-          <p className="text-slate-600 mt-1">
+          <p className="text-xs text-slate-700 mt-1 max-w-3xl leading-relaxed">
             Official operational reporting for AICTE Executive Committee and Regional Directors. Real-time metrics computed across the active 2026–27 approval cycle.
           </p>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 flex-shrink-0">
           <button
             onClick={handleExportCSV}
-            className="px-3 py-1.5 bg-gov-navy-900 text-white hover:bg-gov-navy-800 rounded font-semibold text-xs flex items-center gap-1.5 shadow-sm"
+            className="px-3.5 py-2 bg-[#142B45] text-white hover:bg-[#1f3f65] rounded-sm font-mono text-xs font-bold uppercase flex items-center gap-2 border-2 border-[#17202B] shadow-[2px_2px_0px_#17202B] transition-all"
           >
-            <Download className="w-3.5 h-3.5" /> Export Workload Report (CSV)
+            <Download className="w-4 h-4" /> Export Workload (CSV)
           </button>
         </div>
       </div>
@@ -151,44 +159,53 @@ export const ReportsPage: React.FC = () => {
           {/* Visual Charts Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Regional Workload Distribution (Bar Chart) */}
-            <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm space-y-3">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+            <div className="bg-white border-2 border-[#17202B] rounded-sm p-4 shadow-[2px_2px_0px_#17202B] space-y-3">
+              <div className="flex items-center justify-between border-b-2 border-[#17202B] pb-2">
                 <div>
-                  <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wide">
-                    Regional Application Load (8 AICTE Offices)
+                  <h4 className="font-mono text-xs font-bold text-slate-900 uppercase tracking-wider">
+                    Regional Application Load (8 AICTE Jurisdictions)
                   </h4>
-                  <p className="text-[11px] text-slate-500">Distribution across jurisdictional offices</p>
+                  <p className="font-mono text-[11px] text-slate-500">Official distribution across jurisdictional offices</p>
                 </div>
-                <span className="text-xs font-mono font-bold text-gov-navy-900">
+                <span className="font-mono text-xs font-bold text-white bg-[#142B45] px-2 py-0.5 rounded-sm border border-[#17202B]">
                   Total: {safeMetrics.totalApplications}
                 </span>
               </div>
 
-              <div className="h-64 w-full">
+              <div className="h-64 w-full pt-2">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={regionalData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                    <XAxis dataKey="region" tick={{ fontSize: 11, fill: '#64748B' }} />
-                    <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#64748B' }} />
+                    <CartesianGrid strokeDasharray="2 2" vertical={false} stroke="#CBD5E1" />
+                    <XAxis dataKey="region" tick={{ fontSize: 11, fill: '#17202B', fontFamily: 'monospace' }} />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#17202B', fontFamily: 'monospace' }} />
                     <Tooltip
-                      contentStyle={{ backgroundColor: '#0F172A', color: '#FFF', borderRadius: '6px', fontSize: '12px' }}
+                      contentStyle={{
+                        backgroundColor: '#142B45',
+                        color: '#FFF',
+                        borderRadius: '2px',
+                        border: '2px solid #17202B',
+                        fontFamily: 'monospace',
+                        fontSize: '11px',
+                      }}
                     />
-                    <Bar dataKey="count" name="Applications" fill="#0F294D" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="count" name="Applications" fill="#142B45" stroke="#17202B" strokeWidth={1} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </div>
 
             {/* Stage Allocation Breakdown (Pie Chart) */}
-            <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm space-y-3">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+            <div className="bg-white border-2 border-[#17202B] rounded-sm p-4 shadow-[2px_2px_0px_#17202B] space-y-3">
+              <div className="flex items-center justify-between border-b-2 border-[#17202B] pb-2">
                 <div>
-                  <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wide">
+                  <h4 className="font-mono text-xs font-bold text-slate-900 uppercase tracking-wider">
                     Stage-Wise Processing Pipeline
                   </h4>
-                  <p className="text-[11px] text-slate-500">Proportion of files currently in evaluation</p>
+                  <p className="font-mono text-[11px] text-slate-500">Proportion of files currently in evaluation</p>
                 </div>
-                <span className="text-xs font-semibold text-emerald-700">Live Breakdown</span>
+                <span className="font-mono text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-sm border border-emerald-300">
+                  LIVE PIPELINE
+                </span>
               </div>
 
               <div className="h-64 w-full">
@@ -200,18 +217,27 @@ export const ReportsPage: React.FC = () => {
                       cy="50%"
                       innerRadius={50}
                       outerRadius={80}
-                      paddingAngle={3}
+                      paddingAngle={2}
                       dataKey="value"
+                      stroke="#17202B"
+                      strokeWidth={1.5}
                     >
                       {stagePieData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
                     <Tooltip
-                      contentStyle={{ backgroundColor: '#0F172A', color: '#FFF', borderRadius: '6px', fontSize: '12px' }}
+                      contentStyle={{
+                        backgroundColor: '#142B45',
+                        color: '#FFF',
+                        borderRadius: '2px',
+                        border: '2px solid #17202B',
+                        fontFamily: 'monospace',
+                        fontSize: '11px',
+                      }}
                     />
                     <Legend
-                      formatter={(value) => <span className="text-[11px] text-slate-700 font-medium">{value}</span>}
+                      formatter={(value) => <span className="font-mono text-[11px] text-slate-800 font-bold">{value}</span>}
                     />
                   </PieChart>
                 </ResponsiveContainer>
@@ -220,30 +246,30 @@ export const ReportsPage: React.FC = () => {
           </div>
 
           {/* Summary KPI Matrix */}
-          <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm">
-            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-3 border-b border-slate-100 pb-2">
+          <div className="bg-white border-2 border-[#17202B] rounded-sm p-4 shadow-[2px_2px_0px_#17202B]">
+            <h4 className="font-mono text-xs font-bold text-slate-900 uppercase tracking-wider mb-3 border-b-2 border-[#17202B] pb-2">
               Regulatory Bottleneck & Turnaround Diagnostics
             </h4>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
-              <div className="p-3 bg-slate-50 rounded border border-slate-200">
-                <span className="text-slate-500 block">Average Queue Ageing</span>
-                <span className="text-lg font-bold text-slate-900">{safeMetrics.averageAgeingDays} Days</span>
-                <span className="text-[11px] text-slate-600 block mt-0.5">APH Norm: &le; 30 Days</span>
+              <div className="p-3 bg-[#FAF9F6] rounded-sm border-2 border-[#17202B] shadow-[1px_1px_0px_#17202B]">
+                <span className="font-mono text-[11px] text-slate-600 block uppercase font-bold">Average Queue Ageing</span>
+                <span className="text-xl font-mono font-bold text-slate-900 block my-0.5">{safeMetrics.averageAgeingDays} Days</span>
+                <span className="font-mono text-[10px] text-slate-500 block">APH Norm: &le; 30 Days</span>
               </div>
-              <div className="p-3 bg-slate-50 rounded border border-slate-200">
-                <span className="text-slate-500 block">Overdue Scrutiny Tasks</span>
-                <span className="text-lg font-bold text-rose-700">{safeMetrics.overdueTasksCount} Files</span>
-                <span className="text-[11px] text-rose-600 block mt-0.5">Exceeding 7d SLA</span>
+              <div className="p-3 bg-[#FAF9F6] rounded-sm border-2 border-[#17202B] shadow-[1px_1px_0px_#17202B]">
+                <span className="font-mono text-[11px] text-slate-600 block uppercase font-bold">Overdue Scrutiny Tasks</span>
+                <span className="text-xl font-mono font-bold text-rose-700 block my-0.5">{safeMetrics.overdueTasksCount} Files</span>
+                <span className="font-mono text-[10px] text-rose-600 block font-semibold">Exceeding 7d SLA</span>
               </div>
-              <div className="p-3 bg-slate-50 rounded border border-slate-200">
-                <span className="text-slate-500 block">Delayed EVC Reports</span>
-                <span className="text-lg font-bold text-amber-700">{safeMetrics.evcOverdueReportsCount} Reports</span>
-                <span className="text-[11px] text-amber-600 block mt-0.5">Exceeding 48h limit</span>
+              <div className="p-3 bg-[#FAF9F6] rounded-sm border-2 border-[#17202B] shadow-[1px_1px_0px_#17202B]">
+                <span className="font-mono text-[11px] text-slate-600 block uppercase font-bold">Delayed EVC Reports</span>
+                <span className="text-xl font-mono font-bold text-amber-700 block my-0.5">{safeMetrics.evcOverdueReportsCount} Reports</span>
+                <span className="font-mono text-[10px] text-amber-700 block font-semibold">Exceeding 48h limit</span>
               </div>
-              <div className="p-3 bg-slate-50 rounded border border-slate-200">
-                <span className="text-slate-500 block">Critical Document Risks</span>
-                <span className="text-lg font-bold text-slate-900">{safeMetrics.documentValidityExpiredCount} Lapsed</span>
-                <span className="text-[11px] text-slate-600 block mt-0.5">Immediate Notice Required</span>
+              <div className="p-3 bg-[#FAF9F6] rounded-sm border-2 border-[#17202B] shadow-[1px_1px_0px_#17202B]">
+                <span className="font-mono text-[11px] text-slate-600 block uppercase font-bold">Critical Document Risks</span>
+                <span className="text-xl font-mono font-bold text-slate-900 block my-0.5">{safeMetrics.documentValidityExpiredCount} Lapsed</span>
+                <span className="font-mono text-[10px] text-slate-600 block font-semibold">Immediate Notice Required</span>
               </div>
             </div>
           </div>

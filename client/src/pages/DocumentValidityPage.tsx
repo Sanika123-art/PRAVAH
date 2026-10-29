@@ -74,87 +74,75 @@ export const DocumentValidityPage: React.FC = () => {
   return (
     <div className="space-y-6 animate-in fade-in duration-150">
       {noticeMessage && (
-        <div className="p-3 bg-amber-50 border border-amber-300 rounded text-amber-900 text-xs flex items-center justify-between shadow-sm animate-in fade-in">
+        <div className="p-3 bg-amber-100 border-2 border-[#17202B] rounded-sm text-slate-900 text-xs font-mono font-medium flex items-center justify-between shadow-[2px_2px_0px_#17202B] animate-in fade-in">
           <span>{noticeMessage}</span>
-          <button onClick={() => setNoticeMessage(null)} className="font-bold underline ml-3">Dismiss</button>
+          <button onClick={() => setNoticeMessage(null)} className="font-bold underline ml-3 text-[#142B45] hover:text-[#E98232]">
+            [DISMISS]
+          </button>
         </div>
       )}
 
       {/* Top Banner */}
-      <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-xs">
+      <div className="bg-[#FAF9F6] border-2 border-[#17202B] rounded-sm p-4 shadow-[2px_2px_0px_#17202B] flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <h3 className="font-bold text-slate-900 text-sm flex items-center gap-1.5">
-            <Clock className="w-4 h-4 text-gov-navy-800" />
+          <div className="flex items-center gap-2 mb-1">
+            <span className="font-mono text-[10px] font-bold uppercase tracking-wider bg-[#142B45] text-white px-2 py-0.5 rounded-sm">
+              REGULATORY RADAR
+            </span>
+            <span className="font-mono text-[10px] font-bold text-slate-600 uppercase">
+              APH LIFECYCLE AUDITING
+            </span>
+          </div>
+          <h3 className="font-mono font-bold text-slate-900 text-base flex items-center gap-2">
+            <Clock className="w-4 h-4 text-[#142B45]" />
             Statutory Document Expiry & Land Lease Validity Auditing
           </h3>
-          <p className="text-slate-600 mt-1">
-            Proactive lifecycle monitoring for mandatory institutional instruments. Per AICTE APH norms, land leases must maintain valid tenure &ge; 30 years, and Fire NOCs require perpetual active certification.
+          <p className="text-xs text-slate-700 mt-1 max-w-3xl leading-relaxed">
+            Continuous compliance monitoring for mandatory institutional instruments. Per AICTE APH norms, land leases must maintain valid tenure &ge; 30 years, and Fire NOCs require perpetual active certification.
           </p>
         </div>
-        <div className="flex items-center space-x-2">
-          <span className="px-2 py-0.5 rounded bg-orange-100 text-orange-900 font-semibold text-xs">
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <span className="px-2.5 py-1 rounded-sm bg-amber-100 text-amber-900 border border-amber-300 font-mono font-bold text-xs">
             180d Early Warning
           </span>
-          <span className="px-2 py-0.5 rounded bg-rose-100 text-rose-900 font-semibold text-xs">
+          <span className="px-2.5 py-1 rounded-sm bg-rose-100 text-rose-900 border border-rose-300 font-mono font-bold text-xs">
             90d Critical Escalation
           </span>
         </div>
       </div>
 
       {/* Filter and Search Controls */}
-      <div className="bg-white rounded-lg border border-slate-200 p-3 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+      <div className="bg-white border-2 border-[#17202B] rounded-sm p-3 shadow-[2px_2px_0px_#17202B] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-          <button
-            onClick={() => setSelectedDocType('ALL')}
-            className={`px-3 py-1.5 rounded font-semibold ${
-              selectedDocType === 'ALL'
-                ? 'bg-gov-navy-900 text-white'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-            }`}
-          >
-            All Instruments ({documents.length})
-          </button>
-          <button
-            onClick={() => setSelectedDocType('LAND_LEASE')}
-            className={`px-3 py-1.5 rounded font-semibold ${
-              selectedDocType === 'LAND_LEASE'
-                ? 'bg-gov-navy-900 text-white'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-            }`}
-          >
-            Land Leases
-          </button>
-          <button
-            onClick={() => setSelectedDocType('FIRE_SAFETY_NOC')}
-            className={`px-3 py-1.5 rounded font-semibold ${
-              selectedDocType === 'FIRE_SAFETY_NOC'
-                ? 'bg-gov-navy-900 text-white'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-            }`}
-          >
-            Fire NOCs
-          </button>
-          <button
-            onClick={() => setSelectedDocType('NBA_ACCREDITATION')}
-            className={`px-3 py-1.5 rounded font-semibold ${
-              selectedDocType === 'NBA_ACCREDITATION'
-                ? 'bg-gov-navy-900 text-white'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-            }`}
-          >
-            NBA Accreditations
-          </button>
+          {[
+            { id: 'ALL', label: `ALL INSTRUMENTS (${documents.length})` },
+            { id: 'LAND_LEASE', label: 'LAND LEASES' },
+            { id: 'FIRE_SAFETY_NOC', label: 'FIRE NOCS' },
+            { id: 'NBA_ACCREDITATION', label: 'NBA ACCREDITATIONS' },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setSelectedDocType(tab.id)}
+              className={`px-3 py-1.5 rounded-sm font-mono text-xs font-bold uppercase transition-all ${
+                selectedDocType === tab.id
+                  ? 'bg-[#142B45] text-white border-2 border-[#17202B] shadow-[1px_1px_0px_#17202B]'
+                  : 'bg-[#FAF9F6] text-slate-700 border border-[#17202B] hover:bg-slate-200'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
-        <div className="relative w-full sm:w-64">
+        <div className="relative w-full sm:w-72">
           <input
             type="text"
-            placeholder="Search document or institute..."
+            placeholder="Search document ID, institute..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full text-xs border border-slate-300 rounded py-1.5 pl-7 pr-3 focus:ring-1 focus:ring-gov-navy-700"
+            className="w-full text-xs font-mono border-2 border-[#17202B] rounded-sm py-1.5 pl-8 pr-3 focus:outline-none focus:ring-1 focus:ring-[#142B45] bg-[#FAF9F6] focus:bg-white"
           />
-          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2 top-2" />
+          <Search className="w-4 h-4 text-slate-500 absolute left-2.5 top-2" />
         </div>
       </div>
 
@@ -169,7 +157,7 @@ export const DocumentValidityPage: React.FC = () => {
           message="No statutory documents match the specified filter or query."
         />
       ) : (
-        <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
+        <div className="bg-white border-2 border-[#17202B] rounded-sm shadow-[2px_2px_0px_#17202B] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="admin-table">
               <thead>
@@ -190,36 +178,36 @@ export const DocumentValidityPage: React.FC = () => {
                     <td>
                       <div className="flex items-center space-x-2">
                         {getDocTypeIcon(doc.documentType)}
-                        <span className="font-bold text-xs text-slate-900">
+                        <span className="font-bold font-mono text-xs text-slate-900 uppercase">
                           {doc.documentType.replace(/_/g, ' ')}
                         </span>
                       </div>
-                      <div className="font-mono text-[11px] text-slate-500 mt-0.5">
+                      <div className="font-mono text-[11px] text-[#142B45] font-semibold mt-0.5">
                         {doc.documentIdentifier}
                       </div>
                     </td>
                     <td>
-                      <div className="text-xs font-semibold text-slate-900 max-w-[200px] truncate">
+                      <div className="text-xs font-semibold text-slate-900 max-w-[220px] truncate">
                         {doc.instituteName}
                       </div>
                     </td>
                     <td className="text-xs text-slate-600 max-w-[180px] truncate">
                       {doc.issuingAuthority}
                     </td>
-                    <td className="text-xs text-slate-600">
+                    <td className="text-xs font-mono text-slate-700">
                       {new Date(doc.issueDate).toLocaleDateString()}
                     </td>
-                    <td className="text-xs font-bold text-slate-900">
+                    <td className="text-xs font-mono font-bold text-slate-900">
                       {new Date(doc.expiryDate).toLocaleDateString()}
                     </td>
                     <td>
                       <span
-                        className={`font-mono text-xs font-bold ${
+                        className={`font-mono text-xs font-bold px-2 py-0.5 rounded-sm border ${
                           doc.daysToExpiry < 0
-                            ? 'text-rose-600'
+                            ? 'bg-rose-50 border-rose-300 text-rose-700'
                             : doc.daysToExpiry <= 60
-                            ? 'text-orange-600'
-                            : 'text-emerald-700'
+                            ? 'bg-amber-50 border-amber-300 text-amber-800'
+                            : 'bg-emerald-50 border-emerald-300 text-emerald-800'
                         }`}
                       >
                         {doc.daysToExpiry < 0
@@ -233,9 +221,9 @@ export const DocumentValidityPage: React.FC = () => {
                     <td>
                       <button
                         onClick={() => handleInspect(doc)}
-                        className="px-2.5 py-1 text-xs font-semibold text-gov-navy-800 bg-gov-navy-50 hover:bg-gov-navy-100 rounded border border-gov-navy-200"
+                        className="px-2.5 py-1 text-xs font-mono font-bold text-[#142B45] bg-[#FAF9F6] hover:bg-slate-200 rounded-sm border-2 border-[#17202B] shadow-[1px_1px_0px_#17202B] uppercase"
                       >
-                        Inspect File
+                        Inspect
                       </button>
                     </td>
                   </tr>

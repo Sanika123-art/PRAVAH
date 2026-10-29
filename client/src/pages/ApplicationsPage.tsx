@@ -97,7 +97,7 @@ export const ApplicationsPage: React.FC = () => {
   return (
     <div className="space-y-5 animate-in fade-in duration-150">
       {/* Top Controls & Multi-Parameter Filter Ribbon */}
-      <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm space-y-3">
+      <div className="bg-white rounded-sm border-2 border-[#17202B] p-4 shadow-[2px_2px_0px_#17202B] space-y-3">
         <div className="flex flex-col md:flex-row items-center justify-between gap-3">
           {/* Search Box */}
           <div className="relative w-full md:w-96">
@@ -106,40 +106,40 @@ export const ApplicationsPage: React.FC = () => {
               placeholder="Search by ID, Institute Name, PID, or State..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full text-xs border border-slate-300 rounded-md py-2 pl-8 pr-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-gov-navy-700"
+              className="w-full text-xs font-semibold border-2 border-[#17202B] rounded-sm py-2 pl-8 pr-3 text-[#17202B] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#142B45] bg-[#FAF9F6]"
             />
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+            <Search className="w-3.5 h-3.5 text-[#5B6875] absolute left-2.5 top-2.5" />
           </div>
 
           {/* Quick Stats & Action Buttons */}
-          <div className="flex items-center space-x-2 w-full md:w-auto justify-end">
-            <span className="text-xs text-slate-500 hidden sm:inline">
+          <div className="flex items-center space-x-2 w-full md:w-auto justify-end flex-wrap gap-1">
+            <span className="text-xs text-[#5B6875] font-mono hidden sm:inline mr-2">
               Showing <strong>{applications.length}</strong> of {totalCount} PostgreSQL Records
             </span>
             <button
               onClick={resetFilters}
-              className="px-2.5 py-1.5 border border-slate-300 rounded text-xs text-slate-600 hover:bg-slate-50 flex items-center gap-1"
+              className="gov-btn-secondary py-1.5 px-3 text-xs font-bold"
             >
-              <RotateCcw className="w-3.5 h-3.5" /> Reset
+              <RotateCcw className="w-3.5 h-3.5 mr-1" /> Reset Filters
             </button>
             <button
               onClick={handleExportCsv}
               disabled={applications.length === 0}
-              className="px-3 py-1.5 bg-gov-navy-900 text-white hover:bg-gov-navy-800 disabled:opacity-50 rounded text-xs font-semibold flex items-center gap-1.5 shadow-sm"
+              className="gov-btn-saffron py-1.5 px-3.5 text-xs font-black shadow-[2px_2px_0px_#17202B] disabled:opacity-50"
             >
-              <Download className="w-3.5 h-3.5" /> Export Register CSV
+              <Download className="w-3.5 h-3.5 mr-1" /> Export CSV
             </button>
           </div>
         </div>
 
         {/* Dropdown Filters */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-2 border-t border-slate-100 text-xs">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 pt-3 border-t-2 border-[#17202B] text-xs">
           <div>
-            <label className="block text-[11px] font-semibold text-slate-500 mb-1">Approval Stage</label>
+            <label className="block text-[10px] font-mono font-bold uppercase text-[#5B6875] mb-1">Approval Stage</label>
             <select
               value={selectedStage}
               onChange={(e) => setSelectedStage(e.target.value)}
-              className="w-full border border-slate-300 rounded py-1 px-2 text-xs focus:ring-1 focus:ring-gov-navy-700"
+              className="w-full border-2 border-[#17202B] rounded-sm py-1.5 px-2 text-xs font-semibold bg-[#FAF9F6] text-[#17202B] focus:ring-2 focus:ring-[#142B45]"
             >
               <option value="ALL">All Stages</option>
               <option value="SUBMITTED">Submitted</option>
@@ -156,11 +156,11 @@ export const ApplicationsPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-[11px] font-semibold text-slate-500 mb-1">AICTE Region</label>
+            <label className="block text-[10px] font-mono font-bold uppercase text-[#5B6875] mb-1">AICTE Region</label>
             <select
               value={selectedRegion}
               onChange={(e) => setSelectedRegion(e.target.value)}
-              className="w-full border border-slate-300 rounded py-1 px-2 text-xs focus:ring-1 focus:ring-gov-navy-700"
+              className="w-full border-2 border-[#17202B] rounded-sm py-1.5 px-2 text-xs font-semibold bg-[#FAF9F6] text-[#17202B] focus:ring-2 focus:ring-[#142B45]"
             >
               <option value="ALL">All Regions</option>
               <option value="NORTHERN">Northern (NRO)</option>
@@ -175,11 +175,11 @@ export const ApplicationsPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-[11px] font-semibold text-slate-500 mb-1">Application Category</label>
+            <label className="block text-[10px] font-mono font-bold uppercase text-[#5B6875] mb-1">Application Category</label>
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full border border-slate-300 rounded py-1 px-2 text-xs focus:ring-1 focus:ring-gov-navy-700"
+              className="w-full border-2 border-[#17202B] rounded-sm py-1.5 px-2 text-xs font-semibold bg-[#FAF9F6] text-[#17202B] focus:ring-2 focus:ring-[#142B45]"
             >
               <option value="ALL">All Categories</option>
               <option value="NEW_INSTITUTE">New Technical Institution</option>
@@ -193,11 +193,11 @@ export const ApplicationsPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-[11px] font-semibold text-slate-500 mb-1">Priority / Urgency</label>
+            <label className="block text-[10px] font-mono font-bold uppercase text-[#5B6875] mb-1">Priority / Urgency</label>
             <select
               value={selectedPriority}
               onChange={(e) => setSelectedPriority(e.target.value)}
-              className="w-full border border-slate-300 rounded py-1 px-2 text-xs focus:ring-1 focus:ring-gov-navy-700"
+              className="w-full border-2 border-[#17202B] rounded-sm py-1.5 px-2 text-xs font-semibold bg-[#FAF9F6] text-[#17202B] focus:ring-2 focus:ring-[#142B45]"
             >
               <option value="ALL">All Priorities</option>
               <option value="NORMAL">Normal Priority</option>
@@ -207,18 +207,22 @@ export const ApplicationsPage: React.FC = () => {
             </select>
           </div>
           <div>
-            <label className="block text-[11px] font-semibold text-slate-500 mb-1">Record source</label>
-            <select value={recordType} onChange={(event) => setRecordType(event.target.value as 'ALL' | 'REAL' | 'DEMO')} className="w-full border border-slate-300 rounded py-1 px-2 text-xs">
-              <option value="ALL">Real and demo</option>
-              <option value="REAL">Real submissions</option>
-              <option value="DEMO">Read-only demo records</option>
+            <label className="block text-[10px] font-mono font-bold uppercase text-[#5B6875] mb-1">Record Source</label>
+            <select
+              value={recordType}
+              onChange={(event) => setRecordType(event.target.value as 'ALL' | 'REAL' | 'DEMO')}
+              className="w-full border-2 border-[#17202B] rounded-sm py-1.5 px-2 text-xs font-semibold bg-[#FAF9F6] text-[#17202B] focus:ring-2 focus:ring-[#142B45]"
+            >
+              <option value="ALL">Real and Demo</option>
+              <option value="REAL">Real Submissions</option>
+              <option value="DEMO">Read-Only Demo Records</option>
             </select>
           </div>
         </div>
       </div>
 
       {/* Main Table Card */}
-      <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-sm border-2 border-[#17202B] shadow-[2px_2px_0px_#17202B] overflow-hidden">
         {loading ? (
           <LoadingState message="Fetching live records from PRAVAH PostgreSQL service..." />
         ) : error ? (
@@ -243,25 +247,25 @@ export const ApplicationsPage: React.FC = () => {
               </thead>
               <tbody>
                 {applications.map((app) => (
-                  <tr key={app.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="font-mono text-xs font-bold text-gov-navy-900">
+                  <tr key={app.id}>
+                    <td className="font-mono text-xs font-black text-[#142B45]">
                       {app.applicationNumber}
                     </td>
-                    <td className="font-mono text-xs text-slate-600">
+                    <td className="font-mono text-xs text-[#5B6875]">
                       {app.permanentInstituteId}
                     </td>
                     <td>
-                      <div className="font-bold text-xs text-slate-900 max-w-[280px] truncate" title={app.instituteName}>
+                      <div className="font-bold text-xs text-[#17202B] max-w-[280px] truncate" title={app.instituteName}>
                         {app.instituteName}
-                        {app.isDemo && <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-900">DEMO</span>}
+                        {app.isDemo && <span className="ml-2 rounded-sm border border-amber-600 bg-amber-100 px-1.5 py-0.5 text-[9px] font-mono font-black text-amber-950 uppercase">DEMO</span>}
                       </div>
-                      <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5">
+                      <div className="text-[11px] text-[#5B6875] font-mono flex items-center gap-1.5 mt-0.5">
                         <span>{app.state}</span>
                         <span>•</span>
-                        <span className="font-medium text-gov-navy-800">{app.region}</span>
+                        <span className="font-bold text-[#142B45]">{app.region}</span>
                       </div>
                     </td>
-                    <td className="text-xs text-slate-700">
+                    <td className="text-xs text-[#17202B] font-medium">
                       {app.category.replace(/_/g, ' ')}
                     </td>
                     <td>
@@ -270,21 +274,21 @@ export const ApplicationsPage: React.FC = () => {
                     <td>
                       <PriorityBadge priority={app.priority} />
                     </td>
-                    <td className="text-xs text-slate-700">
+                    <td className="text-xs text-[#5B6875] font-mono">
                       {app.assignedOfficer}
                     </td>
                     <td>
-                      <div className="font-mono text-xs font-semibold text-slate-800">
+                      <div className="font-mono text-xs font-bold text-[#17202B]">
                         {app.stageAgeingDays}d
                       </div>
-                      <div className="text-[10px] text-slate-400">
+                      <div className="text-[10px] text-[#5B6875] font-mono">
                         Total: {app.totalAgeingDays}d
                       </div>
                     </td>
                     <td>
                       <button
                         onClick={() => setSelectedApplication(app)}
-                        className="px-2.5 py-1 text-xs font-semibold text-gov-navy-800 bg-gov-navy-50 hover:bg-gov-navy-100 rounded border border-gov-navy-200 transition"
+                        className="gov-btn-secondary py-1 px-3 text-xs font-bold"
                       >
                         Inspect
                       </button>
@@ -297,9 +301,9 @@ export const ApplicationsPage: React.FC = () => {
         )}
 
         {/* Register Footer */}
-        <div className="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-600">
+        <div className="p-3 bg-[#FAF9F6] border-t-2 border-[#17202B] flex items-center justify-between text-xs text-[#17202B] font-mono">
           <span>Showing <strong>{applications.length}</strong> of <strong>{totalCount}</strong> database records</span>
-          <span className="text-[11px] text-slate-400">PostgreSQL Backed • AICTE Regulatory Processing Standard APH 2024–27</span>
+          <span className="text-[11px] text-[#5B6875]">PostgreSQL Backed • AICTE Regulatory Processing Standard APH 2024–27</span>
         </div>
       </div>
 
